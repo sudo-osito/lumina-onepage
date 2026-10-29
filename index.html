@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#FFFFFF">
 <link rel="icon" href="recursos/lumina-marca.svg" type="image/svg+xml">
 <link rel="preload" href="recursos/video/epp.jpg?v=4" as="image">
-<link rel="stylesheet" href="lumina.css?v=4">
+<link rel="stylesheet" href="lumina.css?v=6">
 </head>
 <body>
 
@@ -82,7 +82,7 @@
     </div>
   </section>
 
-  <!-- 03 · El recorrido: de la cámara a tu equipo en cinco paradas que se despliegan -->
+  <!-- 03 · El recorrido: la planta que se enciende; la luz de Lumina viaja por las seis estaciones -->
   <section class="como" id="como" aria-labelledby="h-como">
     <div class="envoltura">
       <div class="cab2">
@@ -92,73 +92,22 @@
         </div>
         <p class="bajada" data-r>No necesitas observar todo. Necesitas identificar lo que requiere atención.</p>
       </div>
-      <div class="ruta" id="ruta">
-        <i class="ruta__linea" aria-hidden="true"><i class="ruta__punto"></i></i>
-
-        <article class="parada activo">
-          <button class="parada__cab" aria-expanded="true"><span class="parada__n">01</span><svg><use href="#i-camara"/></svg><span class="parada__t"><small>Captura</small><b>Cámaras</b></span></button>
-          <div class="parada__cuerpo">
-            <div class="vin vin--feed"><canvas data-vin="crudo"></canvas><span class="vin__rec"><i></i>REC · CAM 02</span></div>
-            <p>Recibe video y señales desde terreno, de las cámaras que ya tiene tu operación.</p>
-          </div>
-        </article>
-
-        <article class="parada">
-          <button class="parada__cab" aria-expanded="false"><span class="parada__n">02</span><svg><use href="#i-ia"/></svg><span class="parada__t"><small>Detecta</small><b>Procesamiento IA</b></span></button>
-          <div class="parada__cuerpo">
-            <div class="vin vin--feed"><canvas data-vin="detecta"></canvas>
-              <div class="donde" role="group" aria-label="Dónde se procesa"><button aria-pressed="true" data-donde="edge">Edge AI</button><button aria-pressed="false" data-donde="nube">Cloud AI</button></div>
-            </div>
-            <p>Identifica personas, vehículos, objetos y condiciones definidas dentro de cada escena. <span class="donde__txt" data-donde="edge">En tu operación, en un PC industrial o servidor con GPU, con baja latencia.</span><span class="donde__txt" data-donde="nube" hidden>En la nube, sin instalar un PC o una GPU dedicada en tu operación.</span></p>
-          </div>
-        </article>
-
-        <article class="parada">
-          <button class="parada__cab" aria-expanded="false"><span class="parada__n">03</span><svg><use href="#i-baliza"/></svg><span class="parada__t"><small>Alerta</small><b>Respuesta en terreno</b></span></button>
-          <div class="parada__cuerpo">
-            <div class="vin vin--alerta">
-              <div class="baliza" aria-hidden="true"><i></i><i></i><svg viewBox="0 0 60 70"><path d="M14 52V34a16 16 0 0 1 32 0v18z" fill="#FFAE1A"/><rect x="8" y="52" width="44" height="9" rx="3" fill="#0B131B"/></svg></div>
-              <div class="noti"><span class="noti__ico"><svg><use href="#i-alerta"/></svg></span><span><small>Lumina · ahora</small><b>Riesgo persona–vehículo</b><em>Zona despacho · Cámara 02</em></span></div>
-              <div class="noti noti--b"><span class="noti__ico noti__ico--tinta"><svg><use href="#i-registro"/></svg></span><span><small>Aviso enviado</small><b>Jefatura de turno</b><em>WhatsApp y correo</em></span></div>
-            </div>
-            <p>Activa proyectores, balizas, alarmas u otros periféricos, y notifica a jefaturas o equipos responsables.</p>
-          </div>
-        </article>
-
-        <article class="parada">
-          <button class="parada__cab" aria-expanded="false"><span class="parada__n">04</span><svg><use href="#i-registro"/></svg><span class="parada__t"><small>Evidencia</small><b>Plataforma</b></span></button>
-          <div class="parada__cuerpo">
-            <div class="vin vin--ficha">
-              <div class="ficha">
-                <div class="ficha__img"><canvas data-vin="captura"></canvas><em>Crítica</em></div>
-                <dl>
-                  <div><dt>Evento</dt><dd>Persona–vehículo</dd></div>
-                  <div><dt>Fecha</dt><dd data-fecha>Hoy</dd></div>
-                  <div><dt>Hora</dt><dd data-hora>—</dd></div>
-                  <div><dt>Ubicación</dt><dd>Zona despacho · CAM 02</dd></div>
-                </dl>
-              </div>
-            </div>
-            <p>Registra cada hallazgo con video, fecha, hora, ubicación y contexto para asegurar su trazabilidad y facilitar su revisión.</p>
-          </div>
-        </article>
-
-        <article class="parada">
-          <button class="parada__cab" aria-expanded="false"><span class="parada__n">05</span><svg><use href="#i-curva"/></svg><span class="parada__t"><small>Mejora</small><b>Tu equipo</b></span></button>
-          <div class="parada__cuerpo">
-            <div class="vin vin--tablero">
-              <div class="kpis"><div><small>Cámaras activas</small><b data-n="12">12</b></div><div><small>Eventos hoy</small><b data-n="28">28</b></div><div><small>Críticos</small><b data-n="3" data-pad>03</b></div></div>
-              <div class="filas">
-                <div><i class="punto e-critica"></i><b>Persona–vehículo</b><em class="e-critica">Crítica</em></div>
-                <div><i class="punto e-revision"></i><b>Uso de EPP</b><em class="e-revision">Revisión</em></div>
-                <div><i class="punto e-atendida"></i><b>Zona restringida</b><em class="e-atendida">Atendida</em></div>
-              </div>
-            </div>
-            <p>Convierte la evidencia en análisis, reportería y retroalimentación continua para mejorar decisiones, conductas y procesos.</p>
-          </div>
-        </article>
+      <div class="maqueta" id="maqueta">
+        <canvas class="maqueta__lienzo" aria-hidden="true"></canvas>
+        <div class="maqueta__capa" id="etiquetas" aria-hidden="true"></div>
+        <div class="donde" role="group" aria-label="Dónde se procesa la inteligencia"><button aria-pressed="true" data-donde="edge">Edge AI</button><button aria-pressed="false" data-donde="nube">Cloud AI</button></div>
+        <p class="maqueta__cargando" id="maqueta-cargando">Armando la planta…</p>
       </div>
-      <p class="nota">Detecciones reales del modelo sobre video de referencia · avisos y cifras ilustrativos</p>
+      <div class="estaciones" role="tablist" aria-label="El recorrido de Lumina">
+        <button role="tab" class="estacion activo" aria-selected="true"><i class="estacion__barra"></i><span>01</span><b>Operación en tiempo real</b><em>Personas, vehículos y activos en tus instalaciones.</em></button>
+        <button role="tab" class="estacion" aria-selected="false"><i class="estacion__barra"></i><span>02</span><b>Periférico de visión</b><em>Cámaras con captura de video en vivo del sitio.</em></button>
+        <button role="tab" class="estacion" aria-selected="false"><i class="estacion__barra"></i><span>03</span><b>Procesamiento con IA</b><em>Análisis de video y detección de eventos, en tu operación o en la nube.</em></button>
+        <button role="tab" class="estacion" aria-selected="false"><i class="estacion__barra"></i><span>04</span><b>Base de datos</b><em>Almacenamiento de eventos y evidencias.</em></button>
+        <button role="tab" class="estacion" aria-selected="false"><i class="estacion__barra"></i><span>05</span><b>Dashboard web</b><em>Interfaz de consulta y administración de datos.</em></button>
+        <button role="tab" class="estacion" aria-selected="false"><i class="estacion__barra"></i><span>06</span><b>Admin / Staff</b><em>Visualiza eventos, analiza datos y toma decisiones.</em></button>
+      </div>
+      <p class="estaciones__txt" id="estacion-txt" aria-live="polite"><b>Operación en tiempo real</b> Personas, vehículos y activos en tus instalaciones.</p>
+      <p class="nota">Maqueta ilustrativa · el monitor muestra detecciones reales del modelo sobre video de referencia</p>
     </div>
   </section>
 
@@ -229,6 +178,6 @@
 </footer>
 
 <script src="recursos/video/detecciones.js?v=4"></script>
-<script src="lumina.js?v=4" type="module"></script>
+<script src="lumina.js?v=6" type="module"></script>
 </body>
 </html>

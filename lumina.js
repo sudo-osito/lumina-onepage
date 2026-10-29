@@ -209,26 +209,6 @@ const CAMARAS = {
   },
 };
 
-/* ── Pasos que avanzan solos con su barra; un clic salta a ese paso y el mouse encima los pausa ── */
-function carrusel({ caja: cont, items, boton, dur, alCambiar }) {
-  let actual = 0, t0 = 0, previo = performance.now(), pausa = false, iniciado = false;
-  const ir = (i) => { actual = i; t0 = performance.now(); items.forEach((p, j) => { p.classList.toggle("activo", j === i); p.style.setProperty("--prog", 0); }); alCambiar(i); };
-  items.forEach((p, i) => (boton ? $(boton, p) : p).addEventListener("click", () => ir(i)));
-  cont.addEventListener("pointerenter", (e) => e.pointerType === "mouse" && (pausa = true));
-  cont.addEventListener("pointerleave", () => (pausa = false));
-  ir(0);
-  if (QUIETO) return;
-  alVer(cont, () => { if (!iniciado) { iniciado = true; t0 = performance.now(); } }, null, .2);
-  bucleVisible(cont, () => {
-    const ahora = performance.now(), dt = ahora - previo; previo = ahora;
-    if (!iniciado) return;
-    if (pausa) { t0 += Math.min(dt, 100); return; }
-    const d = typeof dur === "function" ? dur(actual) : dur, k = clamp((ahora - t0) / d);
-    items[actual].style.setProperty("--prog", k);
-    if (k >= 1) ir((actual + 1) % items.length);
-  }, 30);
-}
-
 /* ── Banner: las cuatro cámaras en ciclo, de fondo, con lo que Lumina detecta en cada una ── */
 {
   const vivo = $("#camaras"), capa = $(".vivo__capa", vivo), videos = $$("video", vivo), barras = $$(".ciclo i"), hudCam = $("#hud-cam");
@@ -256,41 +236,12 @@ function carrusel({ caja: cont, items, boton, dur, alCambiar }) {
   });
 }
 
-/* ── El recorrido: de la cámara a tu equipo; cada parada se despliega con su escena ── */
+/* ── El recorrido: la maqueta 3D se carga recién cuando la sección se acerca (Three.js pesa) ── */
+window.LUMINA = { cajas, dibujarCajas, dibujarRiesgo, mapa, hora };
 {
-  const ruta = $("#ruta"), paradas = $$(".parada", ruta), linea = $(".ruta__linea", ruta), punto = $(".ruta__punto", ruta);
-  paradas.forEach((p) => p.insertAdjacentHTML("beforeend", '<i class="parada__barra"></i>'));
-  punto.style.transition = "none";
-  const video = Object.assign(document.createElement("video"), { muted: true, loop: true, playsInline: true, preload: "none", src: "recursos/video/despacho.mp4?v=4" });
-  const foto = Object.assign(new Image(), { src: "recursos/video/despacho.jpg?v=4" });
-  const vin = Object.fromEntries($$("canvas[data-vin]", ruta).map((c) => [c.dataset.vin, c]));
-  let actual = 0;
-  const cubrir = (c, img, iw, ih, w, h) => { const s = Math.max(w / iw, h / ih); c.drawImage(img, (w - iw * s) / 2, (h - ih * s) / 2, iw * s, ih * s); };
-  const sube = () => { const t0 = performance.now(), bs = $$(".kpis b[data-n]", ruta); const paso = () => { const q = eo(clamp((performance.now() - t0) / 1100)); bs.forEach((b) => { const n = Math.round(q * +b.dataset.n); b.textContent = b.hasAttribute("data-pad") ? String(n).padStart(2, "0") : n; }); if (q < 1 && actual === 4) requestAnimationFrame(paso); }; paso(); };
-  carrusel({ caja: ruta, items: paradas, boton: ".parada__cab", dur: 5600, alCambiar: (i) => {
-    actual = i; paradas.forEach((p, j) => $(".parada__cab", p).setAttribute("aria-expanded", j === i));
-    if (i === 3) { const d = new Date(); $("[data-hora]", ruta).textContent = hora(d); $("[data-fecha]", ruta).textContent = d.toLocaleDateString("es-CL", { day: "numeric", month: "short", year: "numeric" }); }
-    if (i === 4) sube();
-  } });
-  alVer(ruta, () => { video.play().catch(() => {}); }, () => video.pause(), 0);
-  bucleVisible(ruta, () => {
-    // el punto sigue a la parada abierta mientras se despliega
-    const p = paradas[actual], x = p.offsetLeft + p.offsetWidth / 2; punto.style.left = x + "px"; linea.style.setProperty("--hasta", x + "px");
-    if (actual <= 1 && video.readyState >= 2) {
-      const cv = vin[actual ? "detecta" : "crudo"], { c, w, h } = lienzo(cv);
-      cubrir(c, video, video.videoWidth, video.videoHeight, w, h);
-      if (actual === 1) { const e = clamp(w / 700, .7, 1); dibujarRiesgo(c, mapa(w, h), cajas(video.currentTime), 1, performance.now() / 1000, e); dibujarCajas(c, mapa(w, h), cajas(video.currentTime), 1, e); }
-    }
-    if (actual === 3 && foto.complete && !vin.captura.dataset.listo) {
-      const { c, w, h } = lienzo(vin.captura); cubrir(c, foto, foto.naturalWidth, foto.naturalHeight, w, h);
-      const e = clamp(w / 700, .55, .8), M = mapa(w, h); dibujarRiesgo(c, M, cajas(1), 1, 0, e); dibujarCajas(c, M, cajas(1), 1, e); vin.captura.dataset.listo = 1;
-    }
-  });
-  $$(".donde button", ruta).forEach((b) => b.addEventListener("click", (e) => {
-    e.stopPropagation();
-    $$(".donde button", ruta).forEach((x) => x.setAttribute("aria-pressed", x === b));
-    $$(".donde__txt", ruta).forEach((s) => (s.hidden = s.dataset.donde !== b.dataset.donde));
-  }));
+  const m = $("#maqueta");
+  const io3d = new IntersectionObserver(([e]) => { if (!e.isIntersecting) return; io3d.disconnect(); import("./maqueta.js?v=6").catch((err) => { console.error(err); $("#maqueta-cargando").textContent = "No se pudo cargar la maqueta."; }); }, { rootMargin: "120% 0px" });
+  io3d.observe(m);
 }
 
 /* ── Navegación ── */
