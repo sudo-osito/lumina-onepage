@@ -155,12 +155,12 @@ function caja(c, M, b, col, txt, e, k = 1) {
 // cada cámara sabe qué mirar y qué contar
 const CAMARAS = {
   epp: {
-    hud: "CAM 01 · ACCESO NORTE",
+    hud: "CAM 01 · LÍNEA DE ARMADO",
     dibujar(c, M, t, e) {
-      const f = cuadro("epp", t);
-      f.p.forEach((p) => { caja(c, M, p, AMBAR, "Persona · con casco", e); caja(c, M, [p[0] + p[2] * .26, p[1] + p[3] * .005, p[2] * .48, p[3] * .13], VERDE, null, e); });
-      const n = f.p.length;
-      return { conteo: `${n} ${n === 1 ? "PERSONA" : "PERSONAS"} · ${n} ${n === 1 ? "CASCO" : "CASCOS"}`, evento: n ? `EPP correcto · ${n === 1 ? "casco detectado" : `${n} cascos detectados`}` : "" };
+      const f = cuadro("epp", t), sin = f.p.filter((p) => !p[4]).length;
+      // verde: chaleco de alta visibilidad medido en el torso; rojo: no se ve, pide revisión
+      f.p.forEach((p) => caja(c, M, p.slice(0, 4), p[4] ? VERDE : ROJO, p[4] ? "Chaleco" : "Chaleco no visible", e * .9));
+      return { conteo: `${f.p.length} PERSONAS · ${f.p.length - sin} CON CHALECO`, evento: sin ? `Revisar EPP · ${sin === 1 ? "1 chaleco no visible" : `${sin} chalecos no visibles`}` : f.p.length ? "EPP correcto · chalecos detectados" : "" };
     },
   },
   despacho: {
@@ -173,27 +173,33 @@ const CAMARAS = {
     },
   },
   zona: {
-    hud: "CAM 03 · SALA ELÉCTRICA",
+    hud: "CAM 03 · ZONA DE PREPARACIÓN",
+    // la zona se define en cada instalación; acá, el piso frente a los estantes
+    Z: [[.47, .32], [.78, .22], [.95, .62], [.54, .76]],
+    dentro([x, y]) { const P = this.Z; let d = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++) { const [xi, yi] = P[i], [xj, yj] = P[j]; if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) d = !d; } return d; },
+    entrada() { if (this._e === undefined) { const D = DET.zona || [], f = D.find((q) => q.p[0] && this.dentro([q.p[0][0] + q.p[0][2] / 2, q.p[0][1] + q.p[0][3]])); this._e = f ? f.t : Infinity; } return this._e; },
     dibujar(c, M, t, e) {
-      const f = cuadro("zona", t), Z = [.3, .06, .4, .93];
-      c.save(); c.setLineDash([9 * e, 7 * e]); c.strokeStyle = ROJO; c.lineWidth = 2 * e; c.fillStyle = "rgba(229,72,77,.07)";
-      rr(c, M.X(Z[0]), M.Y(Z[1]), M.X(Z[0] + Z[2]) - M.X(Z[0]), M.Y(Z[1] + Z[3]) - M.Y(Z[1]), 16 * e); c.fill(); c.stroke(); c.restore();
-      pildora(c, M.X(Z[0]) + 10 * e, M.Y(Z[1]) + 36 * e, "Zona restringida", ROJO, 1, e);
-      const dentro = t > 1.2, seg = Math.max(0, Math.floor(t - 1.2));
-      f.p.forEach((p) => caja(c, M, p, dentro ? ROJO : AMBAR, dentro ? `Permanencia ${String(Math.floor(seg / 60)).padStart(2, "0")}:${String(seg % 60).padStart(2, "0")}` : "Persona", e));
-      return { conteo: `${f.p.length} ${f.p.length === 1 ? "PERSONA" : "PERSONAS"} EN ZONA`, evento: dentro && f.p.length ? "Permanencia en zona restringida" : "" };
+      const f = cuadro("zona", t), p = f.p[0], ent = this.entrada(), dentro = !!p && t >= ent;
+      c.save(); c.beginPath(); this.Z.forEach(([x, y], i) => (i ? c.lineTo(M.X(x), M.Y(y)) : c.moveTo(M.X(x), M.Y(y)))); c.closePath();
+      c.fillStyle = dentro ? `rgba(229,72,77,${.12 + .06 * Math.sin(performance.now() / 160)})` : "rgba(229,72,77,.06)"; c.fill();
+      c.setLineDash([9 * e, 7 * e]); c.strokeStyle = ROJO; c.lineWidth = 2 * e; c.stroke(); c.restore();
+      pildora(c, M.X(this.Z[1][0]) - 120 * e, M.Y(this.Z[1][1]) + 2 * e, "Zona restringida", ROJO, 1, e);
+      const seg = Math.max(0, Math.floor(t - ent));
+      if (p) caja(c, M, p, dentro ? ROJO : AMBAR, dentro ? `Permanencia 00:${String(seg).padStart(2, "0")}` : "Persona", e);
+      return { conteo: dentro ? "1 PERSONA EN ZONA" : `${f.p.length} ${f.p.length === 1 ? "PERSONA" : "PERSONAS"}`, evento: dentro ? "Ingreso a zona restringida" : "" };
     },
   },
-  patio: {
-    hud: "CAM 04 · PATIO DE CAMIONES",
+  trafico: {
+    hud: "CAM 04 · PASILLO CENTRAL",
     dibujar(c, M, t, e) {
-      const f = cuadro("patio", t), p = f.p[0];
-      let cerca = false;
-      if (f.v) { const v = caja(c, M, f.v, HONDO, "Camión", e);
-        if (p) { const a = caja(c, M, p, AMBAR, "Persona", e), gap = f.v[0] - (p[0] + p[2]); cerca = gap < .12;
-          if (cerca) { c.save(); c.strokeStyle = HONDO; c.lineWidth = 2.5 * e; c.setLineDash([6 * e, 6 * e]); c.lineDashOffset = -performance.now() / 33; c.beginPath(); c.moveTo(a.x + a.w, a.y + a.h * .5); c.lineTo(v.x, a.y + a.h * .5); c.stroke(); c.restore(); pildora(c, (a.x + a.w + v.x) / 2 - 40 * e, a.y + a.h * .5 - 4 * e, "Proximidad", HONDO, 1, e); } } }
-      else if (p) caja(c, M, p, AMBAR, "Persona", e);
-      return { conteo: `${f.p.length} ${f.p.length === 1 ? "PERSONA" : "PERSONAS"} · ${f.v ? 1 : 0} CAMIÓN`, evento: cerca ? "Persona cerca de un camión en movimiento" : "" };
+      const D = DET.trafico || [], k = Math.min(D.length - 1, Math.round(t * 25)), f = D[k] || { p: [] };
+      // la ruta: dónde estuvo el montacargas desde que entró en cuadro
+      c.save(); c.strokeStyle = "rgba(255,174,26,.85)"; c.lineWidth = 3 * e; c.setLineDash([2 * e, 9 * e]); c.lineCap = "round"; c.beginPath();
+      let primero = true; for (let i = 0; i <= k; i += 2) { const v = D[i].v; if (!v) continue; const x = M.X(v[0] + v[2] / 2), y = M.Y(v[1] + v[3] * .85); primero ? c.moveTo(x, y) : c.lineTo(x, y); primero = false; }
+      c.stroke(); c.restore();
+      if (f.v) caja(c, M, f.v, HONDO, "Montacargas", e);
+      f.p.forEach((p) => caja(c, M, p, AMBAR, f.v ? null : "Persona", e, .8));
+      return { conteo: `${f.v ? 1 : 0} MONTACARGAS · ${f.p.length ? "1 OPERADOR" : "SIN OPERADOR"}`, evento: f.v && k > 25 ? "Montacargas en movimiento · pasillo central" : "" };
     },
   },
 };
