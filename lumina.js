@@ -78,6 +78,7 @@ function luz(cv, recorrido) {
 $$("canvas[data-luz]").forEach((cv) => luz(cv, LUCES[cv.dataset.luz]));
 
 /* ── Texto que se escribe y se borra, como un teclado ── */
+const PRISA = { v: 1 }; // si el usuario insiste con el scroll mientras algo se escribe, se escribe más rápido (nunca de golpe)
 function maquina(el, { una = false, ms = 0 } = {}) {
   const palabras = el.dataset.palabras.split("|");
   let i = el.textContent ? 1 : 0, vivo = false, turno = 0;
@@ -90,7 +91,7 @@ function maquina(el, { una = false, ms = 0 } = {}) {
       let letras = Array.from(el.textContent);
       while (letras.length && sigue()) { letras.pop(); el.textContent = letras.join(""); await esperar(borrar); }
       const w = Array.from(palabras[i % palabras.length]);
-      for (let k = 1; k <= w.length && sigue(); k++) { el.textContent = w.slice(0, k).join(""); await esperar(tipear + Math.random() * (ms ? ms * .6 : 45)); }
+      for (let k = 1; k <= w.length && sigue(); k++) { el.textContent = w.slice(0, k).join(""); await esperar((tipear + Math.random() * (ms ? ms * .6 : 45)) / PRISA.v); }
       el.classList.remove("escribiendo");
       if (una || !sigue()) { vivo = false; return; }
       i++; await esperar(2400);
@@ -260,7 +261,7 @@ const suave = { y: scrollY, meta: scrollY, activo: false, bloqueado: false, viaj
   };
   addEventListener("wheel", (e) => {
     if (e.ctrlKey) return;
-    if (suave.bloqueado) { e.preventDefault(); if (Math.abs(e.deltaY) > 4) completarFrase(); return; }
+    if (suave.bloqueado) { e.preventDefault(); if (performance.now() - suave.desde > 700 && Math.abs(e.deltaY) > 4) PRISA.v = 3; return; }
     if (!fino || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
     e.preventDefault(); suave.viaje = false;
     if (!suave.activo) suave.y = suave.meta = scrollY;
@@ -282,23 +283,17 @@ const suave = { y: scrollY, meta: scrollY, activo: false, bloqueado: false, viaj
 function irA(y) { suave.activo = false; suave.y = suave.meta = y; scrollTo(0, y); }
 
 /* ── La frase: al llegar, la página se detiene hasta que termina de escribirse ── */
-let pintarFrase = () => {}, completarFrase = () => {};
+let pintarFrase = () => {};
 {
   const sec = $("#frase"), ls = $$(".frase__l", sec), ms = ls.map((l, i) => maquina($(".tipeo", l), { una: true, ms: i ? 16 : 8 }));
   let estado = 0; // 0 esperando · 1 escribiendo · 2 listo
   async function escribir() {
-    estado = 1; suave.bloqueado = true;
+    estado = 1; suave.bloqueado = true; suave.desde = performance.now(); PRISA.v = 1;
     const r = sec.getBoundingClientRect(); irA(Math.round(scrollY + r.top + r.height / 2 - innerHeight / 2));
     const suelta = setTimeout(() => (suave.bloqueado = false), 2000);
-    for (const [i, l] of ls.entries()) { if (estado === 2) return clearTimeout(suelta); l.classList.add("on"); await ms[i].iniciar(); await esperar(i ? 0 : 120); if (i < ls.length - 1) l.classList.remove("on"); }
-    if (estado === 2) return clearTimeout(suelta);
-    clearTimeout(suelta); suave.bloqueado = false; estado = 2;
+    for (const [i, l] of ls.entries()) { l.classList.add("on"); await ms[i].iniciar(); await esperar(i ? 0 : 120); if (i < ls.length - 1) l.classList.remove("on"); }
+    clearTimeout(suelta); suave.bloqueado = false; estado = 2; PRISA.v = 1;
   }
-  completarFrase = () => {
-    if (estado !== 1) return;
-    ms.forEach((m) => m.parar()); ls.forEach((l) => { $(".tipeo", l).textContent = $(".tipeo", l).dataset.palabras; l.classList.remove("on"); });
-    ls[ls.length - 1].classList.add("on"); suave.bloqueado = false; estado = 2;
-  };
   pintarFrase = () => {
     if (estado || suave.viaje) return;
     const r = sec.getBoundingClientRect(), centro = r.top + r.height / 2;
