@@ -105,7 +105,8 @@ function maquina(el, { una = false, ms = 0 } = {}) {
 
 /* ── Dibujo de detecciones (cajas con su píldora) ── */
 const LETRA = (px) => `600 ${px}px -apple-system, "SF Pro Text", Inter, system-ui, sans-serif`;
-function mapa(w, h) { const s = Math.max(w / 16, h / 9), vw = 16 * s, vh = 9 * s, ox = (w - vw) / 2, oy = (h - vh) / 2; return { X: (n) => ox + n * vw, Y: (n) => oy + n * vh }; }
+// foco: qué parte del video queda a la vista cuando la pantalla es más angosta que 16:9 (0 izquierda · 1 derecha)
+function mapa(w, h, foco = .5) { const s = Math.max(w / 16, h / 9), vw = 16 * s, vh = 9 * s, ox = (w - vw) * foco, oy = (h - vh) / 2; return { X: (n) => ox + n * vw, Y: (n) => oy + n * vh }; }
 function cajas(t) {
   const D = (window.DET || {}).despacho || [], f = D.length ? D[Math.min(D.length - 1, Math.round(t * 25))] : null, out = [];
   if (!f) return out;
@@ -155,6 +156,7 @@ function caja(c, M, b, col, txt, e, k = 1) {
 // cada cámara sabe qué mirar y qué contar
 const CAMARAS = {
   epp: {
+    foco: .42,
     hud: "CAM 01 · LÍNEA DE ARMADO",
     dibujar(c, M, t, e) {
       const f = cuadro("epp", t), sin = f.p.filter((p) => !p[4]).length;
@@ -164,6 +166,7 @@ const CAMARAS = {
     },
   },
   despacho: {
+    foco: .78,
     hud: "CAM 02 · ZONA DESPACHO",
     dibujar(c, M, t, e) {
       const lista = cajas(t), m = lista.find((b) => b.m), p = lista.find((b) => !b.m);
@@ -173,6 +176,7 @@ const CAMARAS = {
     },
   },
   zona: {
+    foco: .4,
     hud: "CAM 03 · ZONA DE PREPARACIÓN",
     // la zona se define en cada instalación; acá, el piso frente a los estantes
     Z: [[.47, .32], [.78, .22], [.95, .62], [.54, .76]],
@@ -190,6 +194,7 @@ const CAMARAS = {
     },
   },
   trafico: {
+    foco: .62,
     hud: "CAM 04 · PASILLO CENTRAL",
     dibujar(c, M, t, e) {
       const D = DET.trafico || [], k = Math.min(D.length - 1, Math.round(t * 25)), f = D[k] || { p: [] };
@@ -224,27 +229,30 @@ function carrusel({ caja: cont, items, boton, dur, alCambiar }) {
   }, 30);
 }
 
-/* ── Banner: cuatro cámaras en vivo; la grande muestra lo que Lumina detecta y la franja deja elegir ── */
+/* ── Banner: las cuatro cámaras en ciclo, de fondo, con lo que Lumina detecta en cada una ── */
 {
-  const vivo = $("#camaras"), capa = $(".vivo__capa", vivo), videos = Object.fromEntries($$("video", vivo).map((v) => [v.dataset.cam, v]));
-  const tabs = $$(".cam", vivo), minis = tabs.map((b) => [$("canvas", b), videos[b.dataset.cam]]);
-  const hudCam = $("#hud-cam"), hudConteo = $("#hud-conteo"), evento = $("#evento"), eventoT = $("#evento-t");
-  let cam = "epp", ultimoEvento = null, ultimoConteo = "", ultimaMini = 0;
-  carrusel({ caja: vivo, items: tabs, dur: 7000, alCambiar: (i) => {
-    cam = tabs[i].dataset.cam;
-    Object.entries(videos).forEach(([k, v]) => v.classList.toggle("on", k === cam));
-    videos[cam].currentTime = 0;
-    tabs.forEach((b, j) => b.setAttribute("aria-selected", j === i));
-    hudCam.textContent = CAMARAS[cam].hud; ultimoEvento = null; evento.classList.remove("on");
-  } });
-  alVer(vivo, () => Object.values(videos).forEach((v) => v.play().catch(() => {})), () => Object.values(videos).forEach((v) => v.pause()), 0);
+  const vivo = $("#camaras"), capa = $(".vivo__capa", vivo), videos = $$("video", vivo), barras = $$(".ciclo i"), hudCam = $("#hud-cam");
+  const DUR = 6000;
+  let i = 0, t0 = performance.now(), visible = false, foco = .5;
+  const ir = (k) => {
+    i = k; t0 = performance.now(); foco = CAMARAS[videos[k].dataset.cam].foco;
+    videos.forEach((v, j) => { v.classList.toggle("on", j === k); if (j === k) { v.currentTime = 0; if (visible) v.play().catch(() => {}); } else v.pause(); });
+    hudCam.textContent = CAMARAS[videos[k].dataset.cam].hud;
+    barras.forEach((b, j) => b.style.setProperty("--k", j < k ? 1 : 0));
+  };
+  videos.forEach((v) => (v.style.objectPosition = `${CAMARAS[v.dataset.cam].foco * 100}% 50%`));
+  ir(0);
+  alVer(vivo, () => { visible = true; videos[i].play().catch(() => {}); }, () => { visible = false; videos.forEach((v) => v.pause()); }, 0);
   bucleVisible(vivo, () => {
-    const { c, w, h } = lienzo(capa), e = clamp(w / 1100, .75, 1.25), v = videos[cam];
-    const r = CAMARAS[cam].dibujar(c, mapa(w, h), v.currentTime, e);
-    if (r.conteo !== ultimoConteo) { hudConteo.textContent = ultimoConteo = r.conteo; }
-    if (r.evento !== ultimoEvento) { ultimoEvento = r.evento; if (r.evento) eventoT.textContent = r.evento; evento.classList.toggle("on", !!r.evento); }
-    const ahora = performance.now();
-    if (ahora - ultimaMini > 90) { ultimaMini = ahora; minis.forEach(([cv, vid]) => { if (vid.readyState < 2 || !cv.offsetParent) return; const m = lienzo(cv); const s = Math.max(m.w / vid.videoWidth, m.h / vid.videoHeight); m.c.drawImage(vid, (m.w - vid.videoWidth * s) / 2, (m.h - vid.videoHeight * s) / 2, vid.videoWidth * s, vid.videoHeight * s); }); }
+    const v = videos[i], { c, w, h } = lienzo(capa);
+    const cam = CAMARAS[v.dataset.cam];
+    // en pantallas angostas el encuadre sigue a lo detectado: paneo suave hacia el centro de las cajas
+    const lista = v.dataset.cam === "despacho" ? cajas(v.currentTime).map((b) => [b.x, b.y, b.w, b.h]) : (() => { const f = cuadro(v.dataset.cam, v.currentTime); return [...f.p, ...(f.v ? [f.v] : [])]; })();
+    if (lista.length) { const cx = lista.reduce((a, b) => a + b[0] + b[2] / 2, 0) / lista.length, vis = Math.min(1, (w / h) / (16 / 9)); const meta = vis >= 1 ? .5 : clamp((cx - vis / 2) / (1 - vis)); foco += (meta - foco) * .04; }
+    v.style.objectPosition = `${foco * 100}% 50%`;
+    if (v.readyState >= 2) cam.dibujar(c, mapa(w, h, foco), v.currentTime, clamp(w / 1300, .8, 1.3));
+    const k = clamp((performance.now() - t0) / DUR); barras[i].style.setProperty("--k", k);
+    if (k >= 1 && !QUIETO) ir((i + 1) % videos.length);
   });
 }
 
@@ -253,8 +261,8 @@ function carrusel({ caja: cont, items, boton, dur, alCambiar }) {
   const ruta = $("#ruta"), paradas = $$(".parada", ruta), linea = $(".ruta__linea", ruta), punto = $(".ruta__punto", ruta);
   paradas.forEach((p) => p.insertAdjacentHTML("beforeend", '<i class="parada__barra"></i>'));
   punto.style.transition = "none";
-  const video = Object.assign(document.createElement("video"), { muted: true, loop: true, playsInline: true, preload: "none", src: "recursos/video/despacho.mp4" });
-  const foto = Object.assign(new Image(), { src: "recursos/video/despacho.jpg" });
+  const video = Object.assign(document.createElement("video"), { muted: true, loop: true, playsInline: true, preload: "none", src: "recursos/video/despacho.mp4?v=4" });
+  const foto = Object.assign(new Image(), { src: "recursos/video/despacho.jpg?v=4" });
   const vin = Object.fromEntries($$("canvas[data-vin]", ruta).map((c) => [c.dataset.vin, c]));
   let actual = 0;
   const cubrir = (c, img, iw, ih, w, h) => { const s = Math.max(w / iw, h / ih); c.drawImage(img, (w - iw * s) / 2, (h - ih * s) / 2, iw * s, ih * s); };
@@ -301,7 +309,7 @@ const suave = { y: scrollY, meta: scrollY, activo: false, bloqueado: false, viaj
   };
   addEventListener("wheel", (e) => {
     if (e.ctrlKey) return;
-    if (suave.bloqueado) { e.preventDefault(); return; }
+    if (suave.bloqueado) { e.preventDefault(); if (Math.abs(e.deltaY) > 4) completarFrase(); return; }
     if (!fino || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
     e.preventDefault(); suave.viaje = false;
     if (!suave.activo) suave.y = suave.meta = scrollY;
@@ -323,18 +331,23 @@ const suave = { y: scrollY, meta: scrollY, activo: false, bloqueado: false, viaj
 function irA(y) { suave.activo = false; suave.y = suave.meta = y; scrollTo(0, y); }
 
 /* ── La frase: al llegar, la página se detiene hasta que termina de escribirse ── */
-let pintarFrase = () => {};
+let pintarFrase = () => {}, completarFrase = () => {};
 {
-  const sec = $("#frase"), ls = $$(".frase__l", sec), ms = ls.map((l, i) => maquina($(".tipeo", l), { una: true, ms: i ? 44 : 20 }));
+  const sec = $("#frase"), ls = $$(".frase__l", sec), ms = ls.map((l, i) => maquina($(".tipeo", l), { una: true, ms: i ? 16 : 8 }));
   let estado = 0; // 0 esperando · 1 escribiendo · 2 listo
   async function escribir() {
     estado = 1; suave.bloqueado = true;
     const r = sec.getBoundingClientRect(); irA(Math.round(scrollY + r.top + r.height / 2 - innerHeight / 2));
-    const suelta = setTimeout(() => (suave.bloqueado = false), 4500);
-    for (const [i, l] of ls.entries()) { l.classList.add("on"); await ms[i].iniciar(); await esperar(i ? 0 : 260); if (i < ls.length - 1) l.classList.remove("on"); }
-    await esperar(300);
+    const suelta = setTimeout(() => (suave.bloqueado = false), 2000);
+    for (const [i, l] of ls.entries()) { if (estado === 2) return clearTimeout(suelta); l.classList.add("on"); await ms[i].iniciar(); await esperar(i ? 0 : 120); if (i < ls.length - 1) l.classList.remove("on"); }
+    if (estado === 2) return clearTimeout(suelta);
     clearTimeout(suelta); suave.bloqueado = false; estado = 2;
   }
+  completarFrase = () => {
+    if (estado !== 1) return;
+    ms.forEach((m) => m.parar()); ls.forEach((l) => { $(".tipeo", l).textContent = $(".tipeo", l).dataset.palabras; l.classList.remove("on"); });
+    ls[ls.length - 1].classList.add("on"); suave.bloqueado = false; estado = 2;
+  };
   pintarFrase = () => {
     if (estado || suave.viaje) return;
     const r = sec.getBoundingClientRect(), centro = r.top + r.height / 2;

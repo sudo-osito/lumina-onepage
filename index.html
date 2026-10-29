@@ -8,8 +8,8 @@
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#FFFFFF">
 <link rel="icon" href="recursos/lumina-marca.svg" type="image/svg+xml">
-<link rel="preload" href="recursos/video/despacho.jpg" as="image">
-<link rel="stylesheet" href="lumina.css">
+<link rel="preload" href="recursos/video/epp.jpg?v=4" as="image">
+<link rel="stylesheet" href="lumina.css?v=4">
 </head>
 <body>
 
@@ -55,38 +55,22 @@
 
 <main id="inicio">
 
-  <!-- 01 · Banner: el título arriba, en blanco; abajo, las cámaras en vivo con lo que Lumina detecta en cada una -->
+  <!-- 01 · Banner: las cámaras en ciclo, de fondo, con lo que Lumina detecta; encima solo el título -->
   <section class="heroe" id="heroe" aria-labelledby="h-heroe">
-    <div class="heroe__cab">
-      <canvas class="luz" data-luz="heroe" aria-hidden="true"></canvas>
-      <div class="envoltura heroe__in">
-        <div class="heroe__izq">
-          <p class="eti" data-r>Lumina · Visión artificial con IA</p>
-          <h1 class="heroe__t" id="h-heroe"><span class="arma">Convertimos cámaras</span><span class="heroe__linea">en <span class="tipeo" id="tipeo" data-palabras="decisiones.|alertas.|evidencia.|mejoras.">decisiones.</span><i class="cursor" aria-hidden="true"></i></span></h1>
-        </div>
-        <div class="heroe__der" data-r style="--d:.3s">
-          <p class="bajada">Nuestra IA detecta riesgos y oportunidades y entrega acciones concretas para mejorar procesos y apoyar a tu equipo.</p>
-          <a class="btn" href="#discovery">Agenda tu Discovery <svg><use href="#i-flecha"/></svg></a>
-        </div>
-      </div>
+    <div class="vivo" id="camaras" aria-hidden="true">
+      <video data-cam="epp" muted loop playsinline preload="auto" poster="recursos/video/epp.jpg?v=4"><source src="recursos/video/epp.mp4?v=4" type="video/mp4"></video>
+      <video data-cam="despacho" muted loop playsinline preload="auto" poster="recursos/video/despacho.jpg?v=4"><source src="recursos/video/despacho.mp4?v=4" type="video/mp4"></video>
+      <video data-cam="zona" muted loop playsinline preload="auto" poster="recursos/video/zona.jpg?v=4"><source src="recursos/video/zona.mp4?v=4" type="video/mp4"></video>
+      <video data-cam="trafico" muted loop playsinline preload="auto" poster="recursos/video/trafico.jpg?v=4"><source src="recursos/video/trafico.mp4?v=4" type="video/mp4"></video>
+      <canvas class="vivo__capa"></canvas>
+      <span class="vivo__rec"><i></i><b id="hud-cam">CAM 01</b></span>
     </div>
-
-    <div class="vivo" id="camaras" aria-label="Cámaras en vivo con Lumina">
-      <div class="vivo__pantalla">
-        <video data-cam="epp" muted loop playsinline preload="auto" poster="recursos/video/epp.jpg" aria-hidden="true"><source src="recursos/video/epp.mp4" type="video/mp4"></video>
-        <video data-cam="despacho" muted loop playsinline preload="auto" poster="recursos/video/despacho.jpg" aria-hidden="true"><source src="recursos/video/despacho.mp4" type="video/mp4"></video>
-        <video data-cam="zona" muted loop playsinline preload="auto" poster="recursos/video/zona.jpg" aria-hidden="true"><source src="recursos/video/zona.mp4" type="video/mp4"></video>
-        <video data-cam="trafico" muted loop playsinline preload="auto" poster="recursos/video/trafico.jpg" aria-hidden="true"><source src="recursos/video/trafico.mp4" type="video/mp4"></video>
-        <canvas class="vivo__capa" aria-hidden="true"></canvas>
-        <div class="vivo__hud" aria-hidden="true"><span><i></i>EN VIVO · <b id="hud-cam">CAM 01 · LÍNEA DE ARMADO</b></span><span id="hud-conteo">2 PERSONAS</span></div>
-        <div class="vivo__evento" id="evento" role="status"><span class="vivo__ico"><svg><use href="#i-alerta"/></svg></span><span><small>Lumina · ahora</small><b id="evento-t">—</b></span></div>
+    <div class="franja">
+      <div class="franja__in">
+        <h1 class="heroe__t" id="h-heroe"><span class="arma">Convertimos cámaras</span> <span class="heroe__linea">en <span class="tipeo" id="tipeo" data-palabras="decisiones.|alertas.|evidencia.|mejoras.">decisiones.</span><i class="cursor" aria-hidden="true"></i></span></h1>
+        <a class="btn" href="#discovery">Agenda tu Discovery <svg><use href="#i-flecha"/></svg></a>
       </div>
-      <div class="franja" role="tablist" aria-label="Cámaras">
-        <button class="cam activo" role="tab" aria-selected="true" data-cam="epp"><i class="cam__barra"></i><canvas class="cam__mini" aria-hidden="true"></canvas><span class="cam__txt"><small>CAM 01 · Línea de armado</small><b>Uso de EPP</b><span class="cam__desc">Identifica condiciones asociadas al uso de casco, chaleco u otros elementos de protección definidos para cada zona.</span></span></button>
-        <button class="cam" role="tab" aria-selected="false" data-cam="despacho"><i class="cam__barra"></i><canvas class="cam__mini" aria-hidden="true"></canvas><span class="cam__txt"><small>CAM 02 · Zona despacho</small><b>Persona–vehículo</b><span class="cam__desc">Reconoce acercamientos entre personas y equipos móviles dentro de zonas y condiciones previamente definidas.</span></span></button>
-        <button class="cam" role="tab" aria-selected="false" data-cam="zona"><i class="cam__barra"></i><canvas class="cam__mini" aria-hidden="true"></canvas><span class="cam__txt"><small>CAM 03 · Zona de preparación</small><b>Zonas restringidas</b><span class="cam__desc">Detecta ingresos, permanencias o cruces de línea dentro de áreas que requieren condiciones especiales de acceso.</span></span></button>
-        <button class="cam" role="tab" aria-selected="false" data-cam="trafico"><i class="cam__barra"></i><canvas class="cam__mini" aria-hidden="true"></canvas><span class="cam__txt"><small>CAM 04 · Pasillo central</small><b>Tráfico interno</b><span class="cam__desc">Sigue a los equipos móviles por la operación: cruces, puntos ciegos y balizas que se encienden solas.</span></span></button>
-      </div>
+      <div class="ciclo" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
     </div>
   </section>
 
@@ -244,7 +228,7 @@
   </div>
 </footer>
 
-<script src="recursos/video/detecciones.js"></script>
-<script src="lumina.js" type="module"></script>
+<script src="recursos/video/detecciones.js?v=4"></script>
+<script src="lumina.js?v=4" type="module"></script>
 </body>
 </html>
