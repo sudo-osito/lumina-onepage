@@ -8,7 +8,7 @@
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#FFFFFF">
 <link rel="icon" href="recursos/lumina-marca.svg" type="image/svg+xml">
-<link rel="preload" href="recursos/video/operacion.jpg" as="image">
+<link rel="preload" href="recursos/video/despacho.jpg" as="image">
 <link rel="stylesheet" href="lumina.css">
 </head>
 <body>
@@ -18,12 +18,14 @@
     <symbol id="lumina" viewBox="0 0 48 48"><circle cx="22" cy="26" r="17" fill="none" stroke="#FFAE1A" stroke-width="3.6"/><circle cx="22" cy="26" r="7.5" fill="#FFAE1A"/><circle cx="38.5" cy="9.5" r="4.2" fill="#FFD37A"/></symbol>
     <symbol id="i-flecha" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></symbol>
     <symbol id="i-alerta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.8 19.5h18.4z"/><path d="M12 10v4.2M12 17h.01"/></symbol>
-    <symbol id="i-baliza" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M7 19v-6a5 5 0 0 1 10 0v6M5 19h14M12 3v2M4.2 6.2l1.4 1.4M19.8 6.2l-1.4 1.4"/></symbol>
-    <symbol id="i-mensaje" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 5.5h16v10H9l-5 4z"/></symbol>
+    <symbol id="i-camara" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M3 8.5 15 5l1.6 5.6-12 3.5z"/><path d="m16.6 10.6 3.4-1v4.2l-3.1.9M9 13.3l.9 3.2H6v3"/></symbol>
+    <symbol id="i-ia" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="6" y="6" width="12" height="12" rx="2.5"/><path d="M9.5 3v3M14.5 3v3M9.5 18v3M14.5 18v3M3 9.5h3M3 14.5h3M18 9.5h3M18 14.5h3"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-baliza" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M7 19v-6a5 5 0 0 1 10 0v6M5 19h14M12 3v2M4.2 6.2l1.4 1.4M19.8 6.2l-1.4 1.4"/></symbol>
+    <symbol id="i-registro" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M9 8h6M9 12h6M9 16h4"/></symbol>
+    <symbol id="i-curva" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v16h16"/><path d="m7 15 4-4 3 3 5-6"/></symbol>
     <symbol id="i-lupa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></symbol>
     <symbol id="i-red" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="5" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="12" cy="12" r="2.4"/><circle cx="19" cy="6" r="2"/><circle cx="19" cy="18" r="2"/><path d="M6.7 7.2 10 10.6M6.7 16.8 10 13.4M14 10.6l3.3-3.4M14 13.4l3.3 3.4"/></symbol>
     <symbol id="i-enchufe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="7" height="8" rx="2"/><rect x="14" y="8" width="7" height="8" rx="2"/><path d="M10 12h4M6.5 5v3M17.5 16v3"/></symbol>
-    <symbol id="i-curva" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v16h16"/><path d="m7 15 4-4 3 3 5-6"/></symbol>
   </defs>
 </svg>
 
@@ -33,186 +35,150 @@
   <div class="envoltura nav__in">
     <a class="logo" href="#inicio" aria-label="Lumina, inicio"><svg><use href="#lumina"/></svg><b>Lumina</b><small>de Optimizo</small></a>
     <nav class="nav__links" aria-label="Secciones">
+      <a href="#camaras">Aplicaciones</a>
       <a href="#como">Cómo funciona</a>
-      <a href="#aplicaciones">Aplicaciones</a>
       <a href="#metodologia">Metodología</a>
-      <a href="#arquitectura">Arquitectura</a>
-      <a href="#plataforma">Plataforma</a>
       <a href="#preguntas">Preguntas</a>
     </nav>
-    <a class="btn btn--chico" href="https://wa.me/56957080410?text=Hola%2C%20quiero%20conocer%20Lumina." target="_blank" rel="noopener">Conversemos</a>
+    <a class="btn btn--chico" href="#discovery">Agenda tu Discovery</a>
     <button class="nav__menu" id="nav-menu" aria-expanded="false" aria-controls="menu-movil" aria-label="Abrir el menú"><i></i><i></i></button>
   </div>
   <nav class="menu" id="menu-movil" aria-label="Menú">
+    <a href="#camaras">Aplicaciones</a>
     <a href="#como">Cómo funciona</a>
-    <a href="#aplicaciones">Aplicaciones</a>
     <a href="#metodologia">Metodología</a>
-    <a href="#arquitectura">Arquitectura</a>
-    <a href="#plataforma">Plataforma</a>
     <a href="#preguntas">Preguntas</a>
-    <a class="btn" href="https://wa.me/56957080410?text=Hola%2C%20quiero%20conocer%20Lumina." target="_blank" rel="noopener">Conversemos <svg><use href="#i-flecha"/></svg></a>
+    <a class="btn" href="#discovery">Agenda tu Discovery <svg><use href="#i-flecha"/></svg></a>
   </nav>
   <div class="progreso" aria-hidden="true"><i id="progreso"></i></div>
 </header>
 
 <main id="inicio">
 
-  <!-- 01 · Héroe: una malla de puntos que nadie ve hasta que la luz de Lumina pasa por encima -->
+  <!-- 01 · Banner: el título arriba, en blanco; abajo, las cámaras en vivo con lo que Lumina detecta en cada una -->
   <section class="heroe" id="heroe" aria-labelledby="h-heroe">
-    <canvas class="luz" data-luz="heroe" aria-hidden="true"></canvas>
-    <div class="envoltura heroe__in">
-      <p class="eti" data-r>Lumina · Visión artificial con IA</p>
-      <h1 class="heroe__t" id="h-heroe"><span class="arma">Convertimos cámaras</span><span class="heroe__linea">en <span class="tipeo" id="tipeo" data-palabras="decisiones.|alertas.|evidencia.|mejoras.">decisiones.</span><i class="cursor" aria-hidden="true"></i></span></h1>
-      <div class="heroe__pie">
-        <p class="bajada" data-r style="--d:.3s">Transformamos tus operaciones con inteligencia artificial que observa, analiza y actúa en tiempo real. Detectamos riesgos, identificamos oportunidades de mejora y convertimos lo que sucede en cada proceso en información útil y acciones inteligentes.</p>
-        <div class="heroe__acc" data-r style="--d:.45s">
-          <a class="btn" href="https://wa.me/56957080410?text=Hola%2C%20quiero%20conocer%20Lumina." target="_blank" rel="noopener">Conversemos <svg><use href="#i-flecha"/></svg></a>
-          <a class="btn btn--claro" href="#como">Mira cómo funciona</a>
+    <div class="heroe__cab">
+      <canvas class="luz" data-luz="heroe" aria-hidden="true"></canvas>
+      <div class="envoltura heroe__in">
+        <div class="heroe__izq">
+          <p class="eti" data-r>Lumina · Visión artificial con IA</p>
+          <h1 class="heroe__t" id="h-heroe"><span class="arma">Convertimos cámaras</span><span class="heroe__linea">en <span class="tipeo" id="tipeo" data-palabras="decisiones.|alertas.|evidencia.|mejoras.">decisiones.</span><i class="cursor" aria-hidden="true"></i></span></h1>
         </div>
+        <div class="heroe__der" data-r style="--d:.3s">
+          <p class="bajada">Nuestra IA detecta riesgos y oportunidades y entrega acciones concretas para mejorar procesos y apoyar a tu equipo.</p>
+          <a class="btn" href="#discovery">Agenda tu Discovery <svg><use href="#i-flecha"/></svg></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="vivo" id="camaras" aria-label="Cámaras en vivo con Lumina">
+      <div class="vivo__pantalla">
+        <video data-cam="epp" muted loop playsinline preload="auto" poster="recursos/video/epp.jpg" aria-hidden="true"><source src="recursos/video/epp.mp4" type="video/mp4"></video>
+        <video data-cam="despacho" muted loop playsinline preload="auto" poster="recursos/video/despacho.jpg" aria-hidden="true"><source src="recursos/video/despacho.mp4" type="video/mp4"></video>
+        <video data-cam="zona" muted loop playsinline preload="auto" poster="recursos/video/zona.jpg" aria-hidden="true"><source src="recursos/video/zona.mp4" type="video/mp4"></video>
+        <video data-cam="patio" muted loop playsinline preload="auto" poster="recursos/video/patio.jpg" aria-hidden="true"><source src="recursos/video/patio.mp4" type="video/mp4"></video>
+        <canvas class="vivo__capa" aria-hidden="true"></canvas>
+        <div class="vivo__hud" aria-hidden="true"><span><i></i>EN VIVO · <b id="hud-cam">CAM 01 · ACCESO NORTE</b></span><span id="hud-conteo">2 PERSONAS</span></div>
+        <div class="vivo__evento" id="evento" role="status"><span class="vivo__ico"><svg><use href="#i-alerta"/></svg></span><span><small>Lumina · ahora</small><b id="evento-t">—</b></span></div>
+      </div>
+      <div class="franja" role="tablist" aria-label="Cámaras">
+        <button class="cam activo" role="tab" aria-selected="true" data-cam="epp"><i class="cam__barra"></i><canvas class="cam__mini" aria-hidden="true"></canvas><span class="cam__txt"><small>CAM 01 · Acceso norte</small><b>Uso de EPP</b><span class="cam__desc">Identifica condiciones asociadas al uso de casco, chaleco u otros elementos de protección definidos para cada zona.</span></span></button>
+        <button class="cam" role="tab" aria-selected="false" data-cam="despacho"><i class="cam__barra"></i><canvas class="cam__mini" aria-hidden="true"></canvas><span class="cam__txt"><small>CAM 02 · Zona despacho</small><b>Persona–vehículo</b><span class="cam__desc">Reconoce acercamientos entre personas y equipos móviles dentro de zonas y condiciones previamente definidas.</span></span></button>
+        <button class="cam" role="tab" aria-selected="false" data-cam="zona"><i class="cam__barra"></i><canvas class="cam__mini" aria-hidden="true"></canvas><span class="cam__txt"><small>CAM 03 · Sala eléctrica</small><b>Zonas restringidas</b><span class="cam__desc">Detecta ingresos, permanencias o cruces de línea dentro de áreas que requieren condiciones especiales de acceso.</span></span></button>
+        <button class="cam" role="tab" aria-selected="false" data-cam="patio"><i class="cam__barra"></i><canvas class="cam__mini" aria-hidden="true"></canvas><span class="cam__txt"><small>CAM 04 · Patio de camiones</small><b>Tráfico interno</b><span class="cam__desc">Reconoce acercamientos entre personas y vehículos en patios, accesos y zonas de carga.</span></span></button>
       </div>
     </div>
   </section>
 
-  <!-- 02 · El visor: video real con las detecciones reales del modelo; la franja va pegada al borde, sobre la retícula -->
-  <section class="visor" id="visor" aria-label="Lumina en una operación real">
-    <div class="visor__img">
-      <video muted loop playsinline preload="auto" poster="recursos/video/operacion.jpg" aria-hidden="true"><source src="recursos/video/operacion.mp4" type="video/mp4"></video>
-      <canvas aria-hidden="true"></canvas>
-    </div>
-    <div class="franja">
-      <div class="franja__c"><span class="vivo-p"><i></i>En vivo</span></div>
-      <div class="franja__c"><small>Cámara</small><b>CAM 01 · Zona despacho</b></div>
-      <div class="franja__c"><small>Detectando</small><b id="conteo-visor">2 personas · 1 montacargas</b></div>
-      <div class="franja__c"><small>Referencia</small><b>Detecciones reales del modelo</b></div>
-    </div>
-  </section>
-
-  <!-- 03 · El desafío: cuatro cámaras grabando en gris; nadie las está mirando -->
-  <section class="desafio" id="desafio" aria-labelledby="h-desafio">
-    <div class="envoltura">
-      <div class="desafio__in">
-        <div class="desafio__izq">
-          <p class="eti" data-r>El desafío</p>
-          <h2 class="t arma" id="h-desafio">Las cámaras registran. <span class="gris">La operación no anticipa.</span></h2>
-          <p class="bajada" data-r>Sin inteligencia artificial, el video se acumula mientras la detección, la respuesta y el aprendizaje siguen dependiendo de una revisión manual.</p>
-        </div>
-        <div class="muro" id="muro" aria-hidden="true">
-          <video muted loop playsinline preload="none" poster="recursos/video/operacion.jpg"><source src="recursos/video/operacion.mp4" type="video/mp4"></video>
-          <div class="cam"><canvas data-x=".18" data-y=".1" data-z="1.35"></canvas><span class="cam__cab"><i></i>REC · CAM 01</span><span class="cam__hora" data-off="0"></span><span class="cam__nom">Acceso norte</span></div>
-          <div class="cam"><canvas data-x=".72" data-y=".9" data-z="1.7" data-espejo></canvas><span class="cam__cab"><i></i>REC · CAM 02</span><span class="cam__hora" data-off="-37"></span><span class="cam__nom">Zona despacho</span></div>
-          <div class="cam"><canvas data-x=".45" data-y=".5" data-z="1.05" data-espejo></canvas><span class="cam__cab"><i></i>REC · CAM 03</span><span class="cam__hora" data-off="-81"></span><span class="cam__nom">Pasillo 04</span></div>
-          <div class="cam"><canvas data-x=".92" data-y=".2" data-z="2.1"></canvas><span class="cam__cab"><i></i>REC · CAM 04</span><span class="cam__hora" data-off="-142"></span><span class="cam__nom">Zona de carga</span></div>
-          <div class="muro__estado"><span>4 cámaras grabando</span><span class="muro__sin">Sin alertas</span></div>
-        </div>
-      </div>
-      <div class="problemas">
-        <div class="problema problema--eti" data-r><p class="eti">Sin inteligencia artificial</p></div>
-        <div class="problema" data-r><span class="problema__n">01</span><b>Operación reactiva</b><p>Los eventos se revisan después de que ocurren, cuando la cámara solo entrega evidencia y ya no existe oportunidad de anticipar.</p></div>
-        <div class="problema" data-r style="--d:.06s"><span class="problema__n">02</span><b>Operación sin alertas</b><p>Sin alertas en tiempo real, las condiciones críticas no activan acciones inmediatas en el piso ni notifican a los equipos responsables.</p></div>
-        <div class="problema" data-r style="--d:.12s"><span class="problema__n">03</span><b>Decisiones sin datos</b><p>Sin una plataforma que consolide eventos y patrones, cuesta priorizar riesgos, identificar conductas y retroalimentar al equipo con datos.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 04 · La frase: la página se detiene hasta que se escribe -->
+  <!-- 02 · La frase: el problema y la respuesta; la página se detiene hasta que se escribe -->
   <section class="frase" id="frase" aria-label="Lumina">
     <div class="envoltura frase__in">
-      <p class="frase__l frase__l--a"><span class="fant">Hacemos visible lo que hoy pasa inadvertido.</span><span class="vivo"><span class="tipeo" data-palabras="Hacemos visible lo que hoy pasa inadvertido." data-una></span><i class="cursor"></i></span></p>
-      <p class="frase__l frase__l--b"><span class="fant">Eso es Lumina.</span><span class="vivo"><span class="tipeo" data-palabras="Eso es Lumina." data-una></span><i class="cursor"></i></span></p>
+      <p class="frase__l frase__l--a"><span class="fant">Las cámaras registran, pero la operación no anticipa.</span><span class="vivo-t"><span class="tipeo" data-palabras="Las cámaras registran, pero la operación no anticipa." data-una></span><i class="cursor"></i></span></p>
+      <p class="frase__l frase__l--b"><span class="fant">Lumina hace visible lo que hoy pasa inadvertido.</span><span class="vivo-t"><span class="tipeo" data-palabras="Lumina hace visible lo que hoy pasa inadvertido." data-una></span><i class="cursor"></i></span></p>
     </div>
   </section>
 
-  <!-- 05 · Cómo funciona: cuatro pasos que avanzan junto con lo que pasa en el monitor -->
+  <!-- 03 · El recorrido: de la cámara a tu equipo en cinco paradas que se despliegan -->
   <section class="como" id="como" aria-labelledby="h-como">
     <div class="envoltura">
       <div class="cab2">
         <div>
-          <p class="eti" data-r>Visión inteligente</p>
+          <p class="eti" data-r>Cómo funciona</p>
           <h2 class="t arma" id="h-como">Convierte video pasivo <span class="gris">en información accionable.</span></h2>
         </div>
         <p class="bajada" data-r>No necesitas observar todo. Necesitas identificar lo que requiere atención.</p>
       </div>
-      <div class="como__in" id="como-in">
-        <ol class="pasos">
-          <li class="paso activo"><button><span class="paso__n">01</span><h3>Detectar</h3><p>Identifica personas, vehículos, objetos y condiciones definidas dentro de cada escena.</p><i class="paso__barra"></i></button></li>
-          <li class="paso"><button><span class="paso__n">02</span><h3>Alertar</h3><p>Activa respuestas en terreno mediante proyectores, balizas, alarmas u otros periféricos, y notifica a jefaturas o equipos responsables.</p><i class="paso__barra"></i></button></li>
-          <li class="paso"><button><span class="paso__n">03</span><h3>Evidenciar</h3><p>Registra cada hallazgo con video, fecha, hora, ubicación y contexto para asegurar su trazabilidad y facilitar su revisión.</p><i class="paso__barra"></i></button></li>
-          <li class="paso"><button><span class="paso__n">04</span><h3>Mejorar</h3><p>Convierte la evidencia en análisis, reportería y retroalimentación continua para mejorar decisiones, conductas y procesos.</p><i class="paso__barra"></i></button></li>
-        </ol>
-        <div>
-          <div class="monitor" id="monitor" data-fase="0">
-            <video muted loop playsinline preload="none" poster="recursos/video/operacion.jpg" aria-label="Zona de despacho vista por Lumina"><source src="recursos/video/operacion.mp4" type="video/mp4"></video>
-            <canvas aria-hidden="true"></canvas>
-            <div class="hud"><span><i></i>CAM 01 · ZONA DESPACHO</span><span id="conteo-mon">2 PERSONAS · 1 MONTACARGAS</span></div>
-            <!-- 02 · Alertar -->
-            <div class="aviso" role="status">
-              <div class="aviso__ico"><svg><use href="#i-alerta"/></svg></div>
-              <div><small>Lumina · ahora</small><b>Riesgo persona–vehículo</b><span>Zona despacho · Cámara 01</span></div>
-            </div>
-            <div class="acciones">
-              <span style="--d:.15s"><svg><use href="#i-baliza"/></svg>Baliza encendida</span>
-              <span style="--d:.3s"><svg><use href="#i-mensaje"/></svg>Aviso a jefatura · WhatsApp y correo</span>
-            </div>
-            <!-- 03 · Evidenciar -->
-            <div class="ficha">
-              <div class="ficha__cab"><b>Hallazgo registrado</b><em>Crítica</em></div>
-              <dl>
-                <div><dt>Evento</dt><dd>Persona–vehículo</dd></div>
-                <div><dt>Fecha</dt><dd id="ficha-fecha">Hoy</dd></div>
-                <div><dt>Hora</dt><dd id="ficha-hora">—</dd></div>
-                <div><dt>Ubicación</dt><dd>Zona despacho</dd></div>
-                <div><dt>Cámara</dt><dd>CAM 01</dd></div>
-                <div><dt>Video</dt><dd>Clip de 6 s</dd></div>
-              </dl>
-            </div>
-            <!-- 04 · Mejorar -->
-            <div class="tablero">
-              <div class="tablero__num">
-                <div><small>Cámaras activas</small><b data-n="12">12</b></div>
-                <div><small>Eventos hoy</small><b data-n="28">28</b></div>
-                <div><small>Hallazgos críticos</small><b data-n="3" data-pad>03</b></div>
-              </div>
-              <div class="tablero__lista">
-                <div><b>Persona–vehículo</b><span>Zona despacho</span><em class="e-critica">Crítica</em></div>
-                <div><b>Uso de EPP</b><span>Acceso norte</span><em class="e-revision">Revisión</em></div>
-                <div><b>Zona restringida</b><span>Pasillo 04</span><em class="e-atendida">Atendida</em></div>
-              </div>
-            </div>
+      <div class="ruta" id="ruta">
+        <i class="ruta__linea" aria-hidden="true"><i class="ruta__punto"></i></i>
+
+        <article class="parada activo">
+          <button class="parada__cab" aria-expanded="true"><span class="parada__n">01</span><svg><use href="#i-camara"/></svg><span class="parada__t"><small>Captura</small><b>Cámaras</b></span></button>
+          <div class="parada__cuerpo">
+            <div class="vin vin--feed"><canvas data-vin="crudo"></canvas><span class="vin__rec"><i></i>REC · CAM 02</span></div>
+            <p>Recibe video y señales desde terreno, de las cámaras que ya tiene tu operación.</p>
           </div>
-          <p class="nota">Video de referencia con detecciones reales del modelo · avisos e indicadores ilustrativos</p>
-        </div>
+        </article>
+
+        <article class="parada">
+          <button class="parada__cab" aria-expanded="false"><span class="parada__n">02</span><svg><use href="#i-ia"/></svg><span class="parada__t"><small>Detecta</small><b>Procesamiento IA</b></span></button>
+          <div class="parada__cuerpo">
+            <div class="vin vin--feed"><canvas data-vin="detecta"></canvas>
+              <div class="donde" role="group" aria-label="Dónde se procesa"><button aria-pressed="true" data-donde="edge">Edge AI</button><button aria-pressed="false" data-donde="nube">Cloud AI</button></div>
+            </div>
+            <p>Identifica personas, vehículos, objetos y condiciones definidas dentro de cada escena. <span class="donde__txt" data-donde="edge">En tu operación, en un PC industrial o servidor con GPU, con baja latencia.</span><span class="donde__txt" data-donde="nube" hidden>En la nube, sin instalar un PC o una GPU dedicada en tu operación.</span></p>
+          </div>
+        </article>
+
+        <article class="parada">
+          <button class="parada__cab" aria-expanded="false"><span class="parada__n">03</span><svg><use href="#i-baliza"/></svg><span class="parada__t"><small>Alerta</small><b>Respuesta en terreno</b></span></button>
+          <div class="parada__cuerpo">
+            <div class="vin vin--alerta">
+              <div class="baliza" aria-hidden="true"><i></i><i></i><svg viewBox="0 0 60 70"><path d="M14 52V34a16 16 0 0 1 32 0v18z" fill="#FFAE1A"/><rect x="8" y="52" width="44" height="9" rx="3" fill="#0B131B"/></svg></div>
+              <div class="noti"><span class="noti__ico"><svg><use href="#i-alerta"/></svg></span><span><small>Lumina · ahora</small><b>Riesgo persona–vehículo</b><em>Zona despacho · Cámara 02</em></span></div>
+              <div class="noti noti--b"><span class="noti__ico noti__ico--tinta"><svg><use href="#i-registro"/></svg></span><span><small>Aviso enviado</small><b>Jefatura de turno</b><em>WhatsApp y correo</em></span></div>
+            </div>
+            <p>Activa proyectores, balizas, alarmas u otros periféricos, y notifica a jefaturas o equipos responsables.</p>
+          </div>
+        </article>
+
+        <article class="parada">
+          <button class="parada__cab" aria-expanded="false"><span class="parada__n">04</span><svg><use href="#i-registro"/></svg><span class="parada__t"><small>Evidencia</small><b>Plataforma</b></span></button>
+          <div class="parada__cuerpo">
+            <div class="vin vin--ficha">
+              <div class="ficha">
+                <div class="ficha__img"><canvas data-vin="captura"></canvas><em>Crítica</em></div>
+                <dl>
+                  <div><dt>Evento</dt><dd>Persona–vehículo</dd></div>
+                  <div><dt>Fecha</dt><dd data-fecha>Hoy</dd></div>
+                  <div><dt>Hora</dt><dd data-hora>—</dd></div>
+                  <div><dt>Ubicación</dt><dd>Zona despacho · CAM 02</dd></div>
+                </dl>
+              </div>
+            </div>
+            <p>Registra cada hallazgo con video, fecha, hora, ubicación y contexto para asegurar su trazabilidad y facilitar su revisión.</p>
+          </div>
+        </article>
+
+        <article class="parada">
+          <button class="parada__cab" aria-expanded="false"><span class="parada__n">05</span><svg><use href="#i-curva"/></svg><span class="parada__t"><small>Mejora</small><b>Tu equipo</b></span></button>
+          <div class="parada__cuerpo">
+            <div class="vin vin--tablero">
+              <div class="kpis"><div><small>Cámaras activas</small><b data-n="12">12</b></div><div><small>Eventos hoy</small><b data-n="28">28</b></div><div><small>Críticos</small><b data-n="3" data-pad>03</b></div></div>
+              <div class="filas">
+                <div><i class="punto e-critica"></i><b>Persona–vehículo</b><em class="e-critica">Crítica</em></div>
+                <div><i class="punto e-revision"></i><b>Uso de EPP</b><em class="e-revision">Revisión</em></div>
+                <div><i class="punto e-atendida"></i><b>Zona restringida</b><em class="e-atendida">Atendida</em></div>
+              </div>
+            </div>
+            <p>Convierte la evidencia en análisis, reportería y retroalimentación continua para mejorar decisiones, conductas y procesos.</p>
+          </div>
+        </article>
       </div>
+      <p class="nota">Detecciones reales del modelo sobre video de referencia · avisos y cifras ilustrativos</p>
     </div>
   </section>
 
-  <!-- 06 · Aplicaciones: cuatro casos; la imagen cambia sola y el clic toma el control -->
-  <section class="usos" id="aplicaciones" aria-labelledby="h-usos">
-    <div class="envoltura">
-      <div class="cab2">
-        <div>
-          <p class="eti" data-r>Aplicaciones</p>
-          <h2 class="t arma" id="h-usos">Una misma tecnología. <span class="gris">Diferentes desafíos en terreno.</span></h2>
-        </div>
-        <p class="bajada" data-r>Cada aplicación se define según el entorno, los riesgos y los objetivos de la operación. Estos casos son un punto de partida para la evaluación técnica.</p>
-      </div>
-      <div class="usos__in" id="usos-in">
-        <ol class="casos">
-          <li class="caso activo"><button><small>Seguridad de personas</small><h3>Uso de EPP</h3><p>Identifica condiciones asociadas al uso de casco, chaleco u otros elementos de protección definidos para cada zona.</p><i class="caso__barra"></i></button></li>
-          <li class="caso"><button><small>Interacción crítica</small><h3>Persona–vehículo</h3><p>Reconoce acercamientos entre personas y equipos móviles dentro de zonas y condiciones previamente definidas.</p><i class="caso__barra"></i></button></li>
-          <li class="caso"><button><small>Control de acceso</small><h3>Zonas restringidas</h3><p>Detecta ingresos, permanencias o cruces de línea dentro de áreas que requieren condiciones especiales de acceso.</p><i class="caso__barra"></i></button></li>
-          <li class="caso"><button><small>Condiciones críticas</small><h3>Eventos críticos</h3><p>Configura alertas para eventos observables como humo, amagos de incendio, caídas, obstáculos o condiciones ergonómicas, sujetos a validación técnica.</p><i class="caso__barra"></i></button></li>
-        </ol>
-        <div class="vitrina" aria-hidden="true">
-          <img class="activo" src="recursos/usos/epp.webp" alt="" loading="lazy">
-          <img src="recursos/usos/persona-vehiculo.webp" alt="" loading="lazy">
-          <img src="recursos/usos/zonas.webp" alt="" loading="lazy">
-          <img src="recursos/usos/eventos.webp" alt="" loading="lazy">
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 07 · Metodología: cuatro columnas sobre la retícula; la luz recorre la línea y enciende cada etapa -->
+  <!-- 04 · Metodología: así parte cada proyecto -->
   <section class="metodo" id="metodologia" aria-labelledby="h-metodo">
     <div class="envoltura">
       <div class="cab2">
@@ -220,7 +186,7 @@
           <p class="eti" data-r>Metodología</p>
           <h2 class="t arma" id="h-metodo">De la problemática <span class="gris">a un sistema que aprende con la operación.</span></h2>
         </div>
-        <p class="bajada" data-r>Comprendemos la problemática y priorizamos los puntos críticos. Luego entrenamos la IA, integramos cámaras y periféricos, y acompañamos la operación con datos.</p>
+        <p class="bajada" data-r>Cada aplicación se define según el entorno, los riesgos y los objetivos de tu operación.</p>
       </div>
       <div class="etapas" id="etapas">
         <i class="etapas__luz" aria-hidden="true"></i>
@@ -232,117 +198,31 @@
     </div>
   </section>
 
-  <!-- 08 · Arquitectura y modelo de servicio: el mismo diagrama, con la inteligencia en tu operación o en la nube -->
-  <section class="arq" id="arquitectura" aria-labelledby="h-arq">
-    <div class="envoltura">
-      <div class="cab2">
-        <div>
-          <p class="eti" data-r>Arquitectura</p>
-          <h2 class="t arma" id="h-arq">Una capa inteligente <span class="gris">integrada a tu operación.</span></h2>
-        </div>
-        <p class="bajada" data-r>Recibe video y señales desde terreno, procesa las reglas y entrega los eventos a una interfaz central. Tú eliges dónde procesar la inteligencia.</p>
-      </div>
-      <div class="plano" id="plano" data-modo="edge">
-        <svg id="plano-svg" role="img" aria-label="Diagrama: las cámaras envían video al procesamiento con IA, que activa los periféricos en terreno y entrega los eventos a la plataforma y al equipo."></svg>
-      </div>
-      <div class="modos" role="group" aria-label="Modelo de servicio">
-        <button class="modo" data-modo="edge" aria-pressed="true">
-          <small>Procesamiento en terreno</small><h3>Edge AI</h3>
-          <p class="modo__intro">La inteligencia se instala y procesa dentro de la operación, en un PC industrial o servidor con GPU conectado a la red local.</p>
-          <ul><li>Procesa cámaras y activa periféricos directamente en el sitio, con baja latencia.</li><li>Requiere infraestructura local dimensionada según la carga y la continuidad esperada.</li><li>El costo depende de la infraestructura, la cantidad de cámaras y los modelos o entrenamientos requeridos.</li></ul>
-        </button>
-        <button class="modo" data-modo="nube" aria-pressed="false">
-          <small>Procesamiento en la nube</small><h3>Cloud AI</h3>
-          <p class="modo__intro">La inteligencia se aloja y procesa en la nube, sin instalar un PC o una GPU dedicada dentro de la operación.</p>
-          <ul><li>No requiere infraestructura local de cómputo para ejecutar los modelos.</li><li>Requiere una conexión estable y segura desde la red local para transferir video o datos.</li><li>El costo depende de la cantidad de cámaras, el procesamiento y los modelos o entrenamientos requeridos.</li></ul>
-        </button>
-      </div>
-      <p class="nota nota--izq">La arquitectura final se valida según cobertura, red y equipamiento disponible.</p>
-    </div>
-  </section>
-
-  <!-- 09 · Plataforma: tres vistas de la misma interfaz -->
-  <section class="plat" id="plataforma" aria-labelledby="h-plat">
-    <div class="envoltura">
-      <div class="cab2">
-        <div>
-          <p class="eti" data-r>Plataforma</p>
-          <h2 class="t arma" id="h-plat">Configura, revisa <span class="gris">y aprende de cada evento.</span></h2>
-        </div>
-        <p class="bajada" data-r>Centraliza la visualización de la operación, la gestión de hallazgos y la configuración de cada cámara en una sola plataforma.</p>
-      </div>
-      <div class="vistas" role="tablist" aria-label="Vistas de la plataforma">
-        <button role="tab" aria-selected="true" data-vista="tablero">Dashboard operacional</button>
-        <button role="tab" aria-selected="false" data-vista="alertas">Alertas y hallazgos</button>
-        <button role="tab" aria-selected="false" data-vista="config">Configuración</button>
-      </div>
-      <div class="app" role="tabpanel" aria-label="Vista ilustrativa de la plataforma">
-        <div class="app__barra"><span class="app__luces"><i></i><i></i><i></i></span><span class="app__marca"><svg><use href="#lumina"/></svg>Lumina</span><span class="app__op">Operación Norte</span><span class="app__linea"><i></i>En línea</span></div>
-        <div class="app__cuerpo">
-          <aside class="app__lado"><small>Resumen</small><span data-vista="tablero" class="activo">Dashboard</span><span data-vista="alertas">Alertas</span><span data-vista="config">Configuración</span></aside>
-          <div class="app__vistas">
-            <div class="vista activo" data-vista="tablero">
-              <div class="vista__cab"><b>Dashboard operacional</b><p>Consolida el estado de las cámaras, los eventos, las tendencias y los indicadores relevantes para comprender la operación.</p></div>
-              <div class="kpis"><div><small>Cámaras activas</small><b>12</b></div><div><small>Eventos hoy</small><b>28</b></div><div><small>Hallazgos críticos</small><b>03</b></div></div>
-              <div class="camaras">
-                <div class="camara" style="--px:20%"><i></i><b>Acceso norte</b><small>En línea</small></div>
-                <div class="camara" style="--px:62%"><i></i><b>Zona despacho</b><small>En línea</small></div>
-                <div class="camara camara--ojo" style="--px:95%"><i></i><b>Pasillo 04</b><small>Revisar señal</small></div>
-              </div>
-            </div>
-            <div class="vista" data-vista="alertas">
-              <div class="vista__cab"><b>Alertas y hallazgos</b><p>Prioriza alertas, revisa evidencia y mantiene la trazabilidad de los hallazgos y las acciones realizadas por el equipo.</p></div>
-              <div class="filas">
-                <div><i class="punto e-critica"></i><b>Persona–vehículo</b><span>Zona despacho</span><em class="e-critica">Crítica</em></div>
-                <div><i class="punto e-revision"></i><b>Uso de EPP</b><span>Acceso norte</span><em class="e-revision">Revisión</em></div>
-                <div><i class="punto e-atendida"></i><b>Zona restringida</b><span>Pasillo 04</span><em class="e-atendida">Atendida</em></div>
-              </div>
-            </div>
-            <div class="vista" data-vista="config">
-              <div class="vista__cab"><b>Configuración personalizada</b><p>Define reglas, zonas, horarios, responsables, canales de aviso y parámetros específicos para cada cámara.</p></div>
-              <div class="ajustes">
-                <div><small>Canales de aviso</small><b>WhatsApp + correo</b></div>
-                <div><small>Responsables</small><b>Equipo de seguridad</b></div>
-                <div><small>Conservación</small><b>30 días</b></div>
-                <div><small>Escalamiento</small><b>Por criticidad</b></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <p class="nota nota--izq">Vistas ilustrativas. La interfaz final se define durante el desarrollo del servicio.</p>
-    </div>
-  </section>
-
-  <!-- 10 · Preguntas -->
+  <!-- 05 · Preguntas -->
   <section class="fq" id="preguntas" aria-labelledby="h-fq">
     <div class="envoltura fq__in">
       <div class="fq__izq">
         <p class="eti" data-r>Preguntas</p>
         <h2 class="t arma" id="h-fq">Lo que todos nos preguntan.</h2>
-        <div class="fq__otra" data-r><b>¿Tienes otra duda?</b><p>Revisemos tu proyecto y evaluemos la mejor solución para tu operación.</p><a class="btn" href="https://wa.me/56957080410?text=Hola%2C%20tengo%20una%20duda%20sobre%20Lumina." target="_blank" rel="noopener">Escríbenos <svg><use href="#i-flecha"/></svg></a></div>
       </div>
       <div class="fq__lista">
-        <details><summary><span>01</span>¿Qué es Lumina?<i></i></summary><p>Es el servicio de visión artificial con IA de Optimizo. Convierte las cámaras de tu operación en una herramienta activa: detecta riesgos, genera alertas y registra cada evento para comprender lo que ocurre en terreno.</p></details>
-        <details><summary><span>02</span>¿Qué puede detectar?<i></i></summary><p>Personas, vehículos, objetos y condiciones definidas para cada escena: uso de EPP, acercamientos entre personas y equipos móviles, ingresos a zonas restringidas y eventos observables como humo, caídas u obstáculos, sujetos a validación técnica.</p></details>
-        <details><summary><span>03</span>¿Cómo avisa cuando algo pasa?<i></i></summary><p>Activa respuestas en terreno mediante proyectores, balizas, alarmas u otros periféricos, y notifica a jefaturas o equipos responsables por los canales que definas.</p></details>
-        <details><summary><span>04</span>¿Dónde se procesa el video?<i></i></summary><p>Tú eliges: en tu operación, con un PC industrial o servidor con GPU (Edge AI), o en la nube, sin infraestructura local de cómputo (Cloud AI). La arquitectura final se valida según cobertura, red y equipamiento disponible.</p></details>
-        <details><summary><span>05</span>¿De qué depende el costo?<i></i></summary><p>De la cantidad de cámaras, del procesamiento y de los modelos o entrenamientos que requiere cada punto. En Edge AI también considera la infraestructura local.</p></details>
-        <details><summary><span>06</span>¿Cómo parte un proyecto?<i></i></summary><p>Comprendiendo tu problemática: identificamos los puntos críticos y las condiciones que deben observarse. Desde ahí entrenamos la IA, integramos cámaras y periféricos, y acompañamos la operación con datos.</p></details>
+        <details><summary><span>01</span>¿Qué puede detectar Lumina?<i></i></summary><p>Personas, vehículos, objetos y condiciones definidas para cada escena: uso de EPP, acercamientos entre personas y equipos móviles, ingresos a zonas restringidas y eventos observables como humo, amagos de incendio, caídas u obstáculos, sujetos a validación técnica.</p></details>
+        <details><summary><span>02</span>¿Funciona con las cámaras que ya tengo?<i></i></summary><p>La solución recibe video y señales desde terreno. Qué cámaras sirven, y si hace falta sumar alguna, se valida según cobertura, red y equipamiento disponible.</p></details>
+        <details><summary><span>03</span>¿Dónde se procesa el video?<i></i></summary><p>Tú eliges. Con Edge AI, en tu operación, en un PC industrial o servidor con GPU conectado a la red local. Con Cloud AI, en la nube, sin infraestructura local de cómputo, con una conexión estable y segura.</p></details>
+        <details><summary><span>04</span>¿De qué depende el costo?<i></i></summary><p>De la cantidad de cámaras, del procesamiento y de los modelos o entrenamientos que requiere cada punto. En Edge AI también considera la infraestructura local.</p></details>
+        <details><summary><span>05</span>¿Cómo parte un proyecto?<i></i></summary><p>Con un Discovery: comprendemos tu problemática, priorizamos los puntos críticos y definimos qué observar. Desde ahí entrenamos la IA, integramos cámaras y periféricos, y acompañamos la operación con datos.</p></details>
       </div>
     </div>
   </section>
 
-  <!-- 11 · Cierre: vuelve la luz -->
-  <section class="fin" id="empieza" aria-labelledby="h-fin">
+  <!-- 06 · Cierre: vuelve la luz -->
+  <section class="fin" id="discovery" aria-labelledby="h-fin">
     <canvas class="luz" data-luz="fin" aria-hidden="true"></canvas>
     <div class="envoltura fin__in">
       <p class="eti" data-r>Siguiente conversación</p>
       <h2 class="fin__t arma" id="h-fin">Inteligencia que observa y actúa.</h2>
       <p class="bajada" data-r>Revisemos tu proyecto y evaluemos la mejor solución para anticipar riesgos y evitar accidentes.</p>
-      <div class="heroe__acc" data-r>
-        <a class="btn btn--grande" href="https://wa.me/56957080410?text=Hola%2C%20quiero%20revisar%20una%20soluci%C3%B3n%20con%20Lumina." target="_blank" rel="noopener"><img src="recursos/whatsapp.svg" alt="" width="18" height="18">Conversemos por WhatsApp</a>
-      </div>
+      <div data-r><a class="btn btn--grande" href="https://wa.me/56957080410?text=Hola%2C%20quiero%20agendar%20un%20Discovery%20de%20Lumina." target="_blank" rel="noopener">Agenda tu Discovery <svg><use href="#i-flecha"/></svg></a></div>
     </div>
   </section>
 </main>
@@ -355,7 +235,7 @@
         <p>Convertimos cámaras en decisiones.</p>
       </div>
       <nav class="pie__cols" aria-label="Mapa del sitio">
-        <div><h4>Servicio</h4><a href="#como">Cómo funciona</a><a href="#aplicaciones">Aplicaciones</a><a href="#metodologia">Metodología</a><a href="#arquitectura">Arquitectura</a><a href="#plataforma">Plataforma</a></div>
+        <div><h4>Lumina</h4><a href="#camaras">Aplicaciones</a><a href="#como">Cómo funciona</a><a href="#metodologia">Metodología</a><a href="#preguntas">Preguntas</a></div>
         <div><h4>Optimizo</h4><a href="https://sudo-osito.github.io/optimizo-sitio/">Optimizo</a><a href="https://medula.condorai.cl/">Médula</a></div>
         <div><h4>Contacto</h4><a href="https://wa.me/56957080410" target="_blank" rel="noopener">WhatsApp +56 9 5708 0410</a></div>
       </nav>
