@@ -212,13 +212,12 @@ const CAMARAS = {
 
 /* ── Banner: las cuatro cámaras en ciclo, de fondo, con lo que Lumina detecta en cada una ── */
 {
-  const vivo = $("#camaras"), capa = $(".vivo__capa", vivo), videos = $$("video", vivo), barras = $$(".ciclo i"), hudCam = $("#hud-cam");
+  const vivo = $("#camaras"), capa = $(".vivo__capa", vivo), videos = $$("video", vivo), barras = $$(".ciclo i");
   const DUR = 6000;
   let i = 0, t0 = performance.now(), visible = false, foco = .5;
   const ir = (k) => {
     i = k; t0 = performance.now(); foco = CAMARAS[videos[k].dataset.cam].foco;
     videos.forEach((v, j) => { v.classList.toggle("on", j === k); if (j === k) { v.currentTime = 0; if (visible) v.play().catch(() => {}); } else v.pause(); });
-    hudCam.textContent = CAMARAS[videos[k].dataset.cam].hud;
     barras.forEach((b, j) => b.style.setProperty("--k", j < k ? 1 : 0));
   };
   videos.forEach((v) => (v.style.objectPosition = `${CAMARAS[v.dataset.cam].foco * 100}% 50%`));
@@ -241,8 +240,103 @@ const CAMARAS = {
 window.LUMINA = { cajas, dibujarCajas, dibujarRiesgo, mapa, hora };
 {
   const m = $("#maqueta");
-  const io3d = new IntersectionObserver(([e]) => { if (!e.isIntersecting) return; io3d.disconnect(); import("./maqueta.js?v=6").catch((err) => { console.error(err); $("#maqueta-cargando").textContent = "No se pudo cargar la maqueta."; }); }, { rootMargin: "120% 0px" });
+  const io3d = new IntersectionObserver(([e]) => { if (!e.isIntersecting) return; io3d.disconnect(); import("./maqueta.js?v=9").catch((err) => { console.error(err); $("#maqueta-cargando").textContent = "No se pudo cargar la maqueta."; }); }, { rootMargin: "120% 0px" });
   io3d.observe(m);
+}
+
+/* ── Metodología: tarjetas que entran una a una y se apilan; cada una con su escena ── */
+let pintarPila = () => {};
+{
+  const cartas = $$(".carta");
+  pintarPila = () => {
+    const tops = cartas.map((c) => c.getBoundingClientRect().top), alto = cartas[0].offsetHeight;
+    cartas.forEach((c, i) => {
+      if (tops[i] > innerHeight * 1.5 || tops[i] < -alto * 2) return;
+      const k = i < cartas.length - 1 ? clamp(1 - (tops[i + 1] - tops[i]) / alto) : 0, kk = Math.round(k * 100) / 100;
+      if (c._k === kk) return; c._k = kk;
+      c.style.setProperty("--esc", 1 - .06 * kk); c.style.setProperty("--luz", 1 - .6 * kk);
+    });
+  };
+  // las escenas usan los cuadros reales de las cámaras (el póster es el segundo 1) y sus detecciones reales de ese cuadro
+  const foto = (n) => Object.assign(new Image(), { src: `recursos/video/${n}.jpg?v=4` });
+  const FOTOS = { zona: foto("zona"), epp: foto("epp"), despacho: foto("despacho"), trafico: foto("trafico") };
+  const cubrir = (c, img, x, y, w, h) => { if (!img.naturalWidth) return; const s = Math.max(w / img.naturalWidth, h / img.naturalHeight), iw = img.naturalWidth * s, ih = img.naturalHeight * s; c.save(); c.beginPath(); c.roundRect ? c.roundRect(x, y, w, h, 14) : c.rect(x, y, w, h); c.clip(); c.drawImage(img, x + (w - iw) / 2, y + (h - ih) / 2, iw, ih); c.restore(); return { X: (n) => x + (w - iw) / 2 + n * iw, Y: (n) => y + (h - ih) / 2 + n * ih }; };
+  const LET = (px, peso = 600) => `${peso} ${px}px -apple-system, "SF Pro Text", Inter, system-ui, sans-serif`;
+  const pastilla = (c, x, y, txt, col, e = 1) => { c.font = LET(12.5 * e); const w = c.measureText(txt).width + 24 * e, h = 24 * e; c.fillStyle = "rgba(15,11,6,.84)"; rr(c, x, y - h, w, h, h / 2); c.fill(); c.fillStyle = col; c.beginPath(); c.arc(x + 11 * e, y - h / 2, 3.5 * e, 0, 7); c.fill(); c.fillStyle = "#fff"; c.textBaseline = "middle"; c.fillText(txt, x + 19 * e, y - h / 2 + .5); };
+  const trazo = (c, M, P, k, col, e) => { // dibuja el contorno de una zona de a poco, como si alguien la estuviera marcando
+    const pts = P.map(([x, y]) => [M.X(x), M.Y(y)]); let total = 0; pts.forEach((p, i) => (total += Math.hypot(...p.map((v, j) => v - pts[(i + 1) % pts.length][j]))));
+    c.save(); c.beginPath(); pts.forEach((p, i) => (i ? c.lineTo(...p) : c.moveTo(...p))); c.closePath();
+    c.fillStyle = col + Math.round(26 * k).toString(16).padStart(2, "0"); c.fill();
+    c.setLineDash([total * k, total]); c.strokeStyle = col; c.lineWidth = 2.4 * e; c.stroke(); c.restore();
+  };
+  const ESCENAS = {
+    // 01 · Comprender: sobre una cámara real se marcan las zonas que hay que observar
+    comprender(c, w, h, t) {
+      const M = cubrir(c, FOTOS.zona, 18, 18, w - 36, h - 36); if (!M) return; const e = clamp(w / 700, .75, 1.2), q = t % 7.5;
+      const Z = [["Zona restringida", [[.47, .32], [.78, .22], [.95, .62], [.54, .76]], "#E5484D"], ["Pasillo de tránsito", [[.02, .52], [.42, .4], [.5, .6], [.06, .86]], "#FFAE1A"], ["Andén", [[.02, .1], [.3, .03], [.33, .3], [.03, .4]], "#FFD37A"]];
+      c.save(); c.beginPath(); c.roundRect ? c.roundRect(18, 18, w - 36, h - 36, 14) : c.rect(18, 18, w - 36, h - 36); c.clip();
+      Z.forEach(([txt, P, col], i) => { const k = eo(clamp((q - .4 - i * 1.3) / 1.1)); if (k <= 0) return; trazo(c, M, P, k, col, e); if (k > .9) pastilla(c, M.X(P[0][0]) + 8, M.Y(P[0][1]) + 30 * e, txt, col, e); });
+      c.restore();
+    },
+    // 02 · Entrenar: cada escena se revisa y queda etiquetada con lo que el modelo tiene que reconocer
+    entrenar(c, w, h, t) {
+      const g = 12, cw = (w - 36 - g) / 2, ch = (h - 36 - g) / 2, e = clamp(w / 900, .7, 1), q = t % 9;
+      const fuentes = [["epp", (M) => (DET.epp[25] || { p: [] }).p.map((p) => [p, p[4] ? "#4ADE80" : "#E5484D", p[4] ? "Chaleco" : "Sin chaleco"])], ["despacho", (M) => cajas(1).map((b) => [[b.x, b.y, b.w, b.h], b.m ? "#FF8A00" : "#FFD37A", b.m ? "Montacargas" : "Persona"])], ["zona", () => (DET.zona[25] || { p: [] }).p.map((p) => [p, "#FFD37A", "Persona"])], ["trafico", () => { const f = DET.trafico[25] || {}; return f.v ? [[f.v, "#FF8A00", "Montacargas"]] : []; }]];
+      fuentes.forEach(([n, cajasDe], i) => {
+        const x = 18 + (i % 2) * (cw + g), y = 18 + Math.floor(i / 2) * (ch + g), M = cubrir(c, FOTOS[n], x, y, cw, ch); if (!M) return;
+        const k = clamp((q - .3 - i * 1.6) / 1.2);
+        if (k > 0 && k < 1) { const ly = y + ch * eo(k); c.fillStyle = "rgba(255,174,26,.9)"; c.fillRect(x, ly - 1.5, cw, 3); c.fillStyle = "rgba(255,174,26,.12)"; c.fillRect(x, y, cw, ly - y); }
+        if (k >= 1) {
+          cajasDe(M).forEach(([b, col, txt], j) => { const bx = M.X(b[0]), by = M.Y(b[1]), bw = M.X(b[0] + b[2]) - bx, bh = M.Y(b[1] + b[3]) - by; c.strokeStyle = col; c.lineWidth = 2 * e; rr(c, bx, by, bw, bh, 8 * e); c.stroke(); if (j < 2) pastilla(c, bx, by - 4, txt, col, e * .9); });
+          c.fillStyle = "rgba(255,255,255,.94)"; rr(c, x + cw - 112 * e, y + 10, 102 * e, 26 * e, 13 * e); c.fill(); c.fillStyle = "#146C3E"; c.font = LET(12.5 * e); c.textBaseline = "middle"; c.fillText("✓ Etiquetada", x + cw - 100 * e, y + 10 + 13 * e);
+        }
+      });
+    },
+    // 03 · Integrar: la cámara real detecta y la señal recorre IA, baliza y aviso
+    integrar(c, w, h, t, v) {
+      const x = 18, y = 18, W = w - 36, H = h - 36, e = clamp(w / 800, .75, 1.15);
+      c.save(); c.beginPath(); c.roundRect ? c.roundRect(x, y, W, H, 14) : c.rect(x, y, W, H); c.clip();
+      if (v.readyState >= 2) { const s = Math.max(W / v.videoWidth, H / v.videoHeight); c.drawImage(v, x + (W - v.videoWidth * s) / 2, y + (H - v.videoHeight * s) / 2, v.videoWidth * s, v.videoHeight * s); }
+      c.translate(x, y); CAMARAS.trafico.dibujar(c, mapa(W, H), v.currentTime, e); c.restore();
+      const pasos = ["Cámara", "IA", "Baliza", "Aviso"], q = (t % 4.8) / 4.8;
+      c.font = LET(13 * e); const anchos = pasos.map((p) => c.measureText(p).width + 30 * e), sep = 26 * e, total = anchos.reduce((a, b) => a + b, 0) + sep * 3;
+      let px = x + (W - total) / 2; const py = y + H - 22 * e, hh = 32 * e;
+      c.fillStyle = "rgba(255,255,255,.9)"; rr(c, px - 10 * e, py - hh - 8 * e, total + 20 * e, hh + 16 * e, (hh + 16 * e) / 2); c.fill();
+      pasos.forEach((p, i) => {
+        const on = q * 4 >= i, w0 = anchos[i];
+        c.fillStyle = on ? "#0B131B" : "#EDEEF0"; rr(c, px, py - hh, w0, hh, hh / 2); c.fill();
+        c.fillStyle = on ? "#fff" : "#5E6A71"; c.textBaseline = "middle"; c.fillText(p, px + 15 * e, py - hh / 2 + .5);
+        if (i < 3) { c.strokeStyle = q * 4 >= i + 1 ? "#FFAE1A" : "#D9DCDE"; c.lineWidth = 2 * e; c.beginPath(); c.moveTo(px + w0 + 4, py - hh / 2); c.lineTo(px + w0 + sep - 4, py - hh / 2); c.stroke(); }
+        px += w0 + sep;
+      });
+    },
+    // 04 · Acompañar: el reporte de la semana se arma solo
+    acompanar(c, w, h, t) {
+      const x = 18, y = 18, W = w - 36, H = h - 36, e = clamp(w / 800, .75, 1.15), q = t % 8;
+      c.fillStyle = "#fff"; rr(c, x, y, W, H, 14); c.fill();
+      c.fillStyle = "#0B131B"; c.font = LET(20 * e); c.textBaseline = "alphabetic"; c.fillText("Reporte semanal", x + 26 * e, y + 44 * e);
+      c.fillStyle = "#5E6A71"; c.font = LET(14 * e, 500); c.fillText("Eventos por día", x + 26 * e, y + 68 * e);
+      const B = [.62, .78, .55, .9, .48, .36, .3], bw = (W * .56 - 52 * e) / B.length, base = y + H - 34 * e, alto = H - 140 * e;
+      B.forEach((b, i) => { const k = eo(clamp((q - .2 - i * .12) / .8)), bh = alto * b * k; c.fillStyle = i >= 4 ? "#FFAE1A" : "#E3E5E8"; rr(c, x + 26 * e + i * bw + 4, base - bh, bw - 8, bh, 6 * e); c.fill(); });
+      c.fillStyle = "#5E6A71"; c.font = LET(12 * e, 500); ["L", "M", "M", "J", "V", "S", "D"].forEach((d, i) => c.fillText(d, x + 26 * e + i * bw + bw / 2 - 4, base + 20 * e));
+      const fx = x + W * .6, fw = W * .4 - 26 * e, filas = [["Persona–vehículo", "Crítica", "#E5484D"], ["Uso de EPP", "Revisión", "#FFAE1A"], ["Zona restringida", "Atendida", "#1F9D5A"]];
+      filas.forEach(([n, est, col], i) => {
+        const k = eo(clamp((q - 1.2 - i * .4) / .6)); if (k <= 0) return; const fy = y + 96 * e + i * 64 * e;
+        c.globalAlpha = k; c.fillStyle = "#F5F5F7"; rr(c, fx, fy, fw, 52 * e, 12 * e); c.fill();
+        c.fillStyle = col; c.beginPath(); c.arc(fx + 18 * e, fy + 26 * e, 4.5 * e, 0, 7); c.fill();
+        c.fillStyle = "#0B131B"; c.font = LET(14 * e); c.textBaseline = "middle"; c.fillText(n, fx + 32 * e, fy + 19 * e);
+        c.fillStyle = "#5E6A71"; c.font = LET(12.5 * e, 500); c.fillText(est, fx + 32 * e, fy + 36 * e); c.globalAlpha = 1;
+      });
+      const kk = eo(clamp((q - 2.6) / .8));
+      if (kk > 0) { c.globalAlpha = kk; c.fillStyle = "#0B131B"; rr(c, fx, y + 96 * e + 3 * 64 * e, fw, 52 * e, 12 * e); c.fill(); c.fillStyle = "#FFD37A"; c.font = LET(13 * e); c.fillText("Observación", fx + 16 * e, y + 96 * e + 3 * 64 * e + 18 * e); c.fillStyle = "#fff"; c.font = LET(13.5 * e, 500); c.fillText("Reforzar el cruce del pasillo 2", fx + 16 * e, y + 96 * e + 3 * 64 * e + 36 * e); c.globalAlpha = 1; }
+    },
+  };
+  const videoIntegrar = Object.assign(document.createElement("video"), { muted: true, loop: true, playsInline: true, preload: "none", src: "recursos/video/trafico.mp4?v=4" });
+  $$("canvas[data-escena]").forEach((cv) => {
+    const tipo = cv.dataset.escena; let t0 = performance.now();
+    alVer(cv, () => { t0 = performance.now(); if (tipo === "integrar") { videoIntegrar.preload = "auto"; videoIntegrar.play().catch(() => {}); } }, () => tipo === "integrar" && videoIntegrar.pause(), 0);
+    bucleVisible(cv, () => { const { c, w, h } = lienzo(cv); ESCENAS[tipo](c, w, h, QUIETO ? 99 : (performance.now() - t0) / 1000, videoIntegrar); }, 30);
+  });
 }
 
 /* ── Navegación ── */
@@ -251,6 +345,7 @@ function pintarNav() { nav.classList.toggle("bajo", scrollY > 8); }
 
 /* ── Scroll suave (solo con mouse o trackpad; en el celular queda el nativo) y bloqueo mientras la frase se escribe ── */
 const suave = { y: scrollY, meta: scrollY, activo: false, bloqueado: false, viaje: false };
+const tramo = $("#recorrido");
 {
   const fino = !QUIETO && matchMedia("(pointer: fine)").matches;
   const paso = () => {
@@ -265,7 +360,10 @@ const suave = { y: scrollY, meta: scrollY, activo: false, bloqueado: false, viaj
     if (!fino || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
     e.preventDefault(); suave.viaje = false;
     if (!suave.activo) suave.y = suave.meta = scrollY;
-    const d = e.deltaY * (e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? innerHeight : 1);
+    let d = e.deltaY * (e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? innerHeight : 1);
+    // dentro del recorrido el scroll va más lento y con tope: nadie pasa la maqueta de un solo envión
+    const rr = tramo.getBoundingClientRect();
+    if (rr.top < innerHeight * .5 && rr.bottom > innerHeight * .5) d = clamp(d * .5, -70, 70);
     suave.meta = clamp(suave.meta + d, 0, document.documentElement.scrollHeight - innerHeight);
     if (!suave.activo) { suave.activo = true; requestAnimationFrame(paso); }
   }, { passive: false });
@@ -303,22 +401,6 @@ let pintarFrase = () => {};
 }
 
 
-/* ── Metodología: la luz recorre la línea y enciende cada etapa ── */
-{
-  const cont = $("#etapas"), luzL = $(".etapas__luz", cont), etapas = $$(".etapa", cont), CICLO = 11000, PAUSA = 2200;
-  let t0 = 0;
-  if (QUIETO) { luzL.style.setProperty("--k", 1); etapas.forEach((e) => e.classList.add("on")); }
-  else {
-    alVer(cont, () => { if (!t0) t0 = performance.now(); }, null, .3);
-    bucleVisible(cont, () => {
-      if (!t0) return;
-      const q = ((performance.now() - t0) % (CICLO + PAUSA)) / CICLO, k = clamp(q);
-      luzL.style.setProperty("--k", k);
-      etapas.forEach((e, i) => e.classList.toggle("on", k >= i / 4 + .02));
-    }, 30);
-  }
-}
-
 /* ── Menú del celular y progreso de lectura ── */
 {
   const boton = $("#nav-menu"), menu = $("#menu-movil");
@@ -333,6 +415,6 @@ function pintarProgreso() { progreso.style.setProperty("--p", clamp(scrollY / (d
 
 /* ── Un solo bucle de scroll ── */
 let pendiente = false;
-function alScroll() { if (pendiente) return; pendiente = true; requestAnimationFrame(() => { pendiente = false; pintarNav(); pintarProgreso(); pintarFrase(); }); }
+function alScroll() { if (pendiente) return; pendiente = true; requestAnimationFrame(() => { pendiente = false; pintarNav(); pintarProgreso(); pintarFrase(); pintarPila(); }); }
 addEventListener("scroll", alScroll, { passive: true }); addEventListener("resize", alScroll);
 alScroll();

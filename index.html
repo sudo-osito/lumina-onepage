@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#FFFFFF">
 <link rel="icon" href="recursos/lumina-marca.svg" type="image/svg+xml">
 <link rel="preload" href="recursos/video/epp.jpg?v=4" as="image">
-<link rel="stylesheet" href="lumina.css?v=6">
+<link rel="stylesheet" href="lumina.css?v=9">
 </head>
 <body>
 
@@ -63,10 +63,9 @@
       <video data-cam="zona" muted loop playsinline preload="auto" poster="recursos/video/zona.jpg?v=4"><source src="recursos/video/zona.mp4?v=4" type="video/mp4"></video>
       <video data-cam="trafico" muted loop playsinline preload="auto" poster="recursos/video/trafico.jpg?v=4"><source src="recursos/video/trafico.mp4?v=4" type="video/mp4"></video>
       <canvas class="vivo__capa"></canvas>
-      <span class="vivo__rec"><i></i><b id="hud-cam">CAM 01</b></span>
     </div>
-    <div class="franja">
-      <div class="franja__in">
+    <div class="heroe__txt">
+      <div class="envoltura heroe__in">
         <h1 class="heroe__t" id="h-heroe"><span class="arma">Convertimos cámaras</span> <span class="heroe__linea">en <span class="tipeo" id="tipeo" data-palabras="decisiones.|alertas.|evidencia.|mejoras.">decisiones.</span><i class="cursor" aria-hidden="true"></i></span></h1>
         <a class="btn" href="#discovery">Agenda tu Discovery <svg><use href="#i-flecha"/></svg></a>
       </div>
@@ -92,21 +91,24 @@
         </div>
         <p class="bajada" data-r>No necesitas observar todo. Necesitas identificar lo que requiere atención.</p>
       </div>
-      <div class="maqueta" id="maqueta">
-        <canvas class="maqueta__lienzo" aria-hidden="true"></canvas>
-        <div class="maqueta__capa" id="etiquetas" aria-hidden="true"></div>
-        <div class="donde" role="group" aria-label="Dónde se procesa la inteligencia"><button aria-pressed="true" data-donde="edge">Edge AI</button><button aria-pressed="false" data-donde="nube">Cloud AI</button></div>
-        <p class="maqueta__cargando" id="maqueta-cargando">Armando la planta…</p>
+      <div class="recorrido" id="recorrido">
+        <div class="recorrido__fijo">
+          <div class="maqueta" id="maqueta">
+            <canvas class="maqueta__lienzo" aria-hidden="true"></canvas>
+            <div class="maqueta__capa" id="etiquetas" aria-hidden="true"></div>
+            <p class="maqueta__cargando" id="maqueta-cargando">Armando la planta…</p>
+          </div>
+          <div class="estaciones" role="tablist" aria-label="El recorrido de Lumina">
+            <button role="tab" class="estacion activo" aria-selected="true"><i class="estacion__barra"></i><span>01</span><b>Operación en tiempo real</b><em>Personas, vehículos y activos en tus instalaciones.</em></button>
+            <button role="tab" class="estacion" aria-selected="false"><i class="estacion__barra"></i><span>02</span><b>Periférico de visión</b><em>Cámaras con captura de video en vivo del sitio.</em></button>
+            <button role="tab" class="estacion" aria-selected="false"><i class="estacion__barra"></i><span>03</span><b>Procesamiento con IA</b><em>Análisis de video y detección de eventos.</em></button>
+            <button role="tab" class="estacion" aria-selected="false"><i class="estacion__barra"></i><span>04</span><b>Base de datos</b><em>Almacenamiento de eventos y evidencias.</em></button>
+            <button role="tab" class="estacion" aria-selected="false"><i class="estacion__barra"></i><span>05</span><b>Dashboard web</b><em>Interfaz de consulta y administración de datos.</em></button>
+            <button role="tab" class="estacion" aria-selected="false"><i class="estacion__barra"></i><span>06</span><b>Admin / Staff</b><em>Visualiza eventos, analiza datos y toma decisiones.</em></button>
+          </div>
+          <p class="estaciones__txt" id="estacion-txt" aria-live="polite"><b>Operación en tiempo real</b> Personas, vehículos y activos en tus instalaciones.</p>
+        </div>
       </div>
-      <div class="estaciones" role="tablist" aria-label="El recorrido de Lumina">
-        <button role="tab" class="estacion activo" aria-selected="true"><i class="estacion__barra"></i><span>01</span><b>Operación en tiempo real</b><em>Personas, vehículos y activos en tus instalaciones.</em></button>
-        <button role="tab" class="estacion" aria-selected="false"><i class="estacion__barra"></i><span>02</span><b>Periférico de visión</b><em>Cámaras con captura de video en vivo del sitio.</em></button>
-        <button role="tab" class="estacion" aria-selected="false"><i class="estacion__barra"></i><span>03</span><b>Procesamiento con IA</b><em>Análisis de video y detección de eventos, en tu operación o en la nube.</em></button>
-        <button role="tab" class="estacion" aria-selected="false"><i class="estacion__barra"></i><span>04</span><b>Base de datos</b><em>Almacenamiento de eventos y evidencias.</em></button>
-        <button role="tab" class="estacion" aria-selected="false"><i class="estacion__barra"></i><span>05</span><b>Dashboard web</b><em>Interfaz de consulta y administración de datos.</em></button>
-        <button role="tab" class="estacion" aria-selected="false"><i class="estacion__barra"></i><span>06</span><b>Admin / Staff</b><em>Visualiza eventos, analiza datos y toma decisiones.</em></button>
-      </div>
-      <p class="estaciones__txt" id="estacion-txt" aria-live="polite"><b>Operación en tiempo real</b> Personas, vehículos y activos en tus instalaciones.</p>
       <p class="nota">Maqueta ilustrativa · el monitor muestra detecciones reales del modelo sobre video de referencia</p>
     </div>
   </section>
@@ -121,12 +123,23 @@
         </div>
         <p class="bajada" data-r>Cada aplicación se define según el entorno, los riesgos y los objetivos de tu operación.</p>
       </div>
-      <div class="etapas" id="etapas">
-        <i class="etapas__luz" aria-hidden="true"></i>
-        <div class="etapa"><svg><use href="#i-lupa"/></svg><span>01</span><b>Comprender</b><p>Identificamos la problemática, los puntos críticos y las condiciones que deben observarse dentro de la operación.</p></div>
-        <div class="etapa"><svg><use href="#i-red"/></svg><span>02</span><b>Entrenar</b><p>Entrenamos la inteligencia artificial según las escenas, parámetros y comportamientos que se necesitan controlar.</p></div>
-        <div class="etapa"><svg><use href="#i-enchufe"/></svg><span>03</span><b>Integrar</b><p>Integramos cámaras, procesamiento, periféricos y alertas para construir un ecosistema conectado y validado en terreno.</p></div>
-        <div class="etapa"><svg><use href="#i-curva"/></svg><span>04</span><b>Acompañar</b><p>Entregamos datos en tiempo real, reportería y observaciones que retroalimentan al equipo e impulsan la mejora continua.</p></div>
+      <div class="pila" id="pila">
+        <article class="carta" style="--i:0">
+          <div class="carta__txt"><span class="carta__n">01 / 04</span><h3>Comprender</h3><p>Identificamos la problemática, los puntos críticos y las condiciones que deben observarse dentro de la operación.</p></div>
+          <div class="carta__esc"><canvas data-escena="comprender" aria-hidden="true"></canvas></div>
+        </article>
+        <article class="carta" style="--i:1">
+          <div class="carta__txt"><span class="carta__n">02 / 04</span><h3>Entrenar</h3><p>Entrenamos la inteligencia artificial según las escenas, parámetros y comportamientos que se necesitan controlar.</p></div>
+          <div class="carta__esc"><canvas data-escena="entrenar" aria-hidden="true"></canvas></div>
+        </article>
+        <article class="carta" style="--i:2">
+          <div class="carta__txt"><span class="carta__n">03 / 04</span><h3>Integrar</h3><p>Integramos cámaras, procesamiento, periféricos y alertas para construir un ecosistema conectado y validado en terreno.</p></div>
+          <div class="carta__esc"><canvas data-escena="integrar" aria-hidden="true"></canvas></div>
+        </article>
+        <article class="carta" style="--i:3">
+          <div class="carta__txt"><span class="carta__n">04 / 04</span><h3>Acompañar</h3><p>Entregamos datos en tiempo real, reportería y observaciones que retroalimentan al equipo e impulsan la mejora continua.</p></div>
+          <div class="carta__esc"><canvas data-escena="acompanar" aria-hidden="true"></canvas></div>
+        </article>
       </div>
     </div>
   </section>
@@ -178,6 +191,6 @@
 </footer>
 
 <script src="recursos/video/detecciones.js?v=4"></script>
-<script src="lumina.js?v=7" type="module"></script>
+<script src="lumina.js?v=9" type="module"></script>
 </body>
 </html>

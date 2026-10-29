@@ -157,11 +157,7 @@ for (let i = 0; i < 3; i++) caja(.9, .03, .02, 0, .3 + i * .16, .66, mat.tinta, 
 const chip = caja(.52, .1, .52, 0, 1, 0, mat.chip, ia, false);
 const bisagra = new THREE.Group(); bisagra.position.set(0, 1, -.65); ia.add(bisagra);
 caja(1.32, .1, 1.32, 0, 0, .65, mat.yeso, bisagra);
-const IA_EDGE = new THREE.Vector3(4.8, PISO, -3.6), IA_NUBE = new THREE.Vector3(5.6, 6.2, -5.4);
-ia.position.copy(IA_EDGE);
-const nube = new THREE.Group(); escena.add(nube); nube.position.copy(IA_NUBE).add(new THREE.Vector3(0, -.5, 0));
-[[0, 0, 0, 1.05], [.95, -.15, .2, .8], [-.95, -.2, -.1, .82], [.3, .35, -.5, .75], [-.4, .3, .5, .7]].forEach(([x, y, z, r]) => { const b = malla(new THREE.SphereGeometry(r, 24, 18), mat.blanco, x, y, z, nube, false); b.castShadow = false; });
-nube.scale.setScalar(.001);
+ia.position.set(4.8, PISO, -3.6);
 // base de datos: discos que suman uno por evento
 const discos = new THREE.Group(); discos.position.set(8.5, PISO, -1.3); escena.add(discos);
 for (let i = 0; i < 3; i++) cil(.66, .32, 0, i * .4, 0, mat.blanco, discos);
@@ -225,7 +221,7 @@ anillo.rotation.x = -Math.PI / 2; escena.add(anillo);
 const ESTACIONES = [
   { t: "Operación en tiempo real", d: "Personas, vehículos y activos en tus instalaciones.", ancla: () => new THREE.Vector3(-6.6, PISO + 2.3, -1.6), dur: 3.4, toma: [-3.6, 1, .4, 7] },
   { t: "Periférico de visión", d: "Cámaras con captura de video en vivo del sitio.", ancla: () => LENTE.clone().add(new THREE.Vector3(0, .5, 0)), dur: 3.8, toma: [-2.2, 1.6, -.8, 7.2] },
-  { t: "Procesamiento con IA", d: "Análisis de video y detección de eventos, en tu operación o en la nube.", ancla: () => ia.position.clone().add(new THREE.Vector3(0, 1.6, 0)), dur: 3.4, toma: () => (modo === "nube" ? [5.4, 4.6, -5, 4.6] : [4.8, 1.5, -3.3, 4.4]) },
+  { t: "Procesamiento con IA", d: "Análisis de video y detección de eventos.", ancla: () => ia.position.clone().add(new THREE.Vector3(0, 1.6, 0)), dur: 3.4, toma: [4.8, 1.5, -3.3, 4.4] },
   { t: "Base de datos", d: "Almacenamiento de eventos y evidencias.", ancla: () => new THREE.Vector3(8.5, PISO + 1.9, -1.3), dur: 3.8, toma: [2.6, 1, .6, 7.4] },
   { t: "Dashboard web", d: "Interfaz de consulta y administración de datos.", ancla: () => new THREE.Vector3(4.7, PISO + 2.9, 3.5), dur: 3.8, toma: [4.8, 1.8, 3.3, 3.5] },
   { t: "Admin / Staff", d: "Visualiza eventos, analiza datos y toma decisiones.", ancla: () => new THREE.Vector3(8.9, PISO + 1.9, 4.3), dur: 3.8, toma: [8.5, 1.4, 4, 3.6] },
@@ -276,12 +272,6 @@ function pintarCurva(k) {
   texCurva.needsUpdate = true;
 }
 
-/* ── Modo Edge / Cloud ── */
-let modo = "edge"; const iaMeta = IA_EDGE.clone(), iaVel = new THREE.Vector3();
-cont.querySelectorAll(".donde button").forEach((b) => b.addEventListener("click", () => {
-  modo = b.dataset.donde; iaMeta.copy(modo === "nube" ? IA_NUBE : IA_EDGE);
-  cont.querySelectorAll(".donde button").forEach((x) => x.setAttribute("aria-pressed", x === b));
-}));
 
 /* ── La cámara de la maqueta: viaja de toma en toma; arrastrar la inclina un poco ── */
 const DIR = new THREE.Vector3(.78, .92, 1).normalize();
@@ -299,10 +289,16 @@ function encuadrar(w, h) {
 }
 
 /* ── El reloj del recorrido: todo depende de T, así un clic deja la planta coherente ── */
-let T = 0, previo = performance.now(), eventos = 27, ultimoEvento = -1, estacion = -1, visible = false, pausaHasta = 0;
+let T = 0, previo = performance.now(), eventos = 27, ultimoEvento = -1, estacion = -1, visible = false;
+const tramoScroll = document.getElementById("recorrido");
+// el scroll maneja el recorrido: 0 al entrar al tramo fijo, TOTAL al salir; T lo sigue con suavidad
+const metaScroll = () => { const r = tramoScroll.getBoundingClientRect(); return clamp(-(r.top - 64) / Math.max(1, r.height - (innerHeight - 64))) * TOTAL * .9999; };
 const estacionDe = (t) => { let i = 0; while (i < 5 && t >= INICIOS[i + 1]) i++; return i; };
 const enEstacion = (t, i) => clamp((t - INICIOS[i]) / ESTACIONES[i].dur);
-chips.forEach((b, i) => b.addEventListener("click", () => { T = INICIOS[i] + .01; pausaHasta = 0; }));
+chips.forEach((b, i) => b.addEventListener("click", () => {
+  const r = tramoScroll.getBoundingClientRect(), recorrible = r.height - (innerHeight - 64);
+  scrollTo({ top: scrollY + r.top - 64 + recorrible * (INICIOS[i] + ESTACIONES[i].dur * .35) / TOTAL, behavior: "smooth" });
+}));
 // la grúa da una vuelta por recorrido y pasa por el paso de peatones justo cuando cruza la persona
 const ALERTA = INICIOS[3] + .45;
 const FASE = (() => { let mejor = 0, d = 1e9; for (let u = 0; u < 1; u += .001) { const p = ruta.getPointAt(u); const dd = Math.hypot(p.x + 2.1, p.z - .95) + (p.z > 2 ? 99 : 0); if (dd < d) { d = dd; mejor = u; } } return mejor; })();
@@ -314,12 +310,12 @@ const tramoPersona = (t) => { // el peatón: espera, cruza hasta el borde del ca
 
 function cuadro() {
   const ahora = performance.now(), dt = Math.min(.05, (ahora - previo) / 1000); previo = ahora;
-  if (!QUIETO && !L.congelar) T = (T + dt) % TOTAL;
+  if (!L.congelar) { const m = metaScroll(); T += (m - T) * (QUIETO ? 1 : 1 - Math.pow(1 - .09, dt * 60)); }
   const e = estacionDe(T), k = enEstacion(T, e), w = cont.clientWidth, h = cont.clientHeight;
   if (lienzo.width !== Math.round(w * render.getPixelRatio())) render.setSize(w, h, false);
 
   // la luz: penumbra en 01, se enciende en 02 y queda encendida hasta el final
-  const luz = e === 0 ? (T < .4 ? 1 - T / .4 : 0) : e === 1 ? eo(clamp(k * 1.6)) : 1;
+  const luz = e === 0 ? 0 : e === 1 ? eo(clamp(k * 1.6)) : 1;
   cielo.intensity = lerp(.55, 1.25, luz); sol.intensity = lerp(.55, 1.7, luz); render.toneMappingExposure = lerp(.78, 1.02, luz);
   foco.intensity = 9 * luz; cono.material.uniforms.uLuz.value = luz;
   const barrido = e === 1 ? Math.sin(k * Math.PI * 1.5) * (1 - k) : 0;
@@ -356,11 +352,6 @@ function cuadro() {
   if (tA > 3.2 && !cerca) ultimoEvento = -1;
   marcos[0].material.color.set(tA < 3 ? 0xE5484D : C.ambar); marcos[3].material.color.set(tA < 3 ? 0xE5484D : C.ambar);
 
-  // la caja de IA: resorte hacia su lugar; con Cloud sube a la nube
-  iaVel.addScaledVector(iaMeta.clone().sub(ia.position), .06).multiplyScalar(.84); ia.position.add(iaVel);
-  const moviendo = iaVel.lengthSq() > 1e-6;
-  const nS = nube.scale.x + ((modo === "nube" ? 1 : .001) - nube.scale.x) * .08; nube.scale.setScalar(nS);
-  if (moviendo || estacion < 0) armarCables();
   const abierta = e === 2 ? eo(clamp(k * 2)) * (1 - clamp((k - .8) * 5)) : 0;
   bisagra.rotation.x = -abierta * 1.1; mat.chip.emissiveIntensity = e === 2 ? .4 + Math.sin(ahora / 90) * .3 + abierta : e > 2 ? .25 : 0;
 
@@ -412,7 +403,6 @@ new IntersectionObserver(([en]) => {
   visible = en.isIntersecting;
   if (visible) { previo = performance.now(); video.play().catch(() => {}); cancelAnimationFrame(raf); raf = requestAnimationFrame(bucle); } else video.pause();
 }, { threshold: 0 }).observe(cont);
-if (QUIETO) { T = INICIOS[4] + 2; chips.forEach((c, i) => c.addEventListener("click", () => { T = INICIOS[i] + ESTACIONES[i].dur * .6; cuadro(); })); }
 cuadro();
 cont.classList.add("lista"); document.getElementById("maqueta-cargando")?.remove();
 // para revisar: salta a una estación y a un punto dentro de ella (0 a 1)
