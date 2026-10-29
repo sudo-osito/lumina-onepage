@@ -11,6 +11,6 @@ Página de una sola vista para Lumina, el servicio de visión artificial con IA 
   - CAM 02 · Persona–vehículo: el video de la v6 con sus detecciones.
   - CAM 03 · Zona restringida: `G8z74loJO7U` (ClearPix Warehouse Dock), seg 1–7. Zona dibujada a mano (en cada instalación se define); la entrada se calcula con los pies de la persona.
   - CAM 04 · Tráfico interno: `rry9LbJlGa0` (ClearPix Warehouse Fork Lift), seg 9–17. Montacargas seguido con Apple Vision y su ruta real dibujada.
-  - Personas: YOLO11m + ByteTrack (Ultralytics), en un entorno temporal que se borró después. Para regenerar: `uv venv` + `uv pip install ultralytics lap` y los scripts de la sesión (`yolo.py`, `chaleco.py`, `detectar.swift`). Todo queda en `recursos/video/detecciones.js`.
+  - Personas: YOLO11m + ByteTrack (Ultralytics), en un entorno temporal que se borró después. Para regenerar: `uv venv` + `uv pip install ultralytics lap` y los scripts de `_herramientas/` (solo locales, fuera de git: `yolo.py`, `chaleco.py`, `detectar.swift`). Todo queda en `recursos/video/detecciones.js`.
 - **Recorrido (v2):** banner con las 4 cámaras en vivo y la franja para elegirlas → frase (desafío + D) → cómo funciona en 5 paradas que se despliegan (cámaras, procesamiento IA con Edge/Cloud, respuesta en terreno, plataforma, tu equipo) → metodología → preguntas → cierre. ~5.500 px en escritorio (la v1 tenía 11.000).
 - **Logo:** provisorio (lente + punto de luz), el mismo de la v6 de Optimizo.
