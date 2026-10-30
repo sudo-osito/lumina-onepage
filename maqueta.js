@@ -21,7 +21,7 @@ render.toneMapping = THREE.ACESFilmicToneMapping; render.toneMappingExposure = 1
 const escena = new THREE.Scene();
 const camara = new THREE.OrthographicCamera(-10, 10, 10, -10, .1, 200);
 
-const C = { blanco: 0xF4F4F2, yeso: 0xE6E7E4, gris: 0xBFC5C9, cable: 0xCDD3D6, tinta: 0x2A3036, kraft: 0xE6DCCB, ambar: 0xFFAE1A };
+const C = { blanco: 0xF4F4F2, yeso: 0xE6E7E4, gris: 0xBFC5C9, cable: 0xCDD3D6, tinta: 0x2A3036, kraft: 0xE6DCCB, ambar: 0xED6A14 };
 const mat = {
   blanco: new THREE.MeshStandardMaterial({ color: C.blanco, roughness: .92 }),
   yeso: new THREE.MeshStandardMaterial({ color: C.yeso, roughness: .95 }),
@@ -31,7 +31,7 @@ const mat = {
   cable: new THREE.MeshStandardMaterial({ color: C.cable, roughness: .7 }),
   marca: new THREE.MeshStandardMaterial({ color: 0xD9DCDE, roughness: 1 }),
   chip: new THREE.MeshStandardMaterial({ color: 0x3A3020, emissive: C.ambar, emissiveIntensity: 0, roughness: .4 }),
-  baliza: new THREE.MeshStandardMaterial({ color: 0xF2D9A6, emissive: C.ambar, emissiveIntensity: 0, roughness: .35 }),
+  baliza: new THREE.MeshStandardMaterial({ color: 0xF4CDB4, emissive: C.ambar, emissiveIntensity: 0, roughness: .35 }),
   telefono: new THREE.MeshStandardMaterial({ color: C.tinta, emissive: C.ambar, emissiveIntensity: 0, roughness: .4 }),
 };
 const linea = new THREE.LineBasicMaterial({ color: 0x0B131B, transparent: true, opacity: .14 });
@@ -127,13 +127,13 @@ const domo = cil(.17, .3, BALIZA.x, PISO + 1.35, BALIZA.z, mat.baliza, escena, f
 const luzBaliza = new THREE.PointLight(C.ambar, 0, 6, 1.6); luzBaliza.position.set(BALIZA.x, PISO + 1.6, BALIZA.z); escena.add(luzBaliza);
 
 /* ── 02 · La luz de la cámara: luz focal real + cono de volumen ── */
-const foco = new THREE.SpotLight(0xffc25a, 0, 0, .5, .55, 0);
+const foco = new THREE.SpotLight(0xff9d5c, 0, 0, .5, .55, 0);
 foco.position.copy(LENTE);
 escena.add(foco, foco.target);
 const conoGeo = new THREE.ConeGeometry(1, 1, 64, 1, true); conoGeo.translate(0, -.5, 0); conoGeo.rotateX(-Math.PI / 2);
 const cono = new THREE.Mesh(conoGeo, new THREE.ShaderMaterial({
   transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending,
-  uniforms: { uLuz: { value: 0 }, uColor: { value: new THREE.Color(0xffb93a) } },
+  uniforms: { uLuz: { value: 0 }, uColor: { value: new THREE.Color(0xff8c45) } },
   vertexShader: "varying float vZ; varying vec3 vN; varying vec3 vV; void main(){ vZ = position.z; vec4 mv = modelViewMatrix * vec4(position,1.); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }",
   fragmentShader: "uniform float uLuz; uniform vec3 uColor; varying float vZ; varying vec3 vN; varying vec3 vV; void main(){ float f = abs(dot(vN, vV)); float a = pow(1. - vZ, 1.15) * pow(f, 1.6) * .34 * uLuz; gl_FragColor = vec4(uColor * a, a); }",
 }));
@@ -205,12 +205,12 @@ function armarCables() {
 armarCables();
 function brillo() {
   const c = Object.assign(document.createElement("canvas"), { width: 128, height: 128 }), x = c.getContext("2d"), g = x.createRadialGradient(64, 64, 0, 64, 64, 64);
-  g.addColorStop(0, "rgba(255,214,140,1)"); g.addColorStop(.25, "rgba(255,174,26,.65)"); g.addColorStop(1, "rgba(255,174,26,0)"); x.fillStyle = g; x.fillRect(0, 0, 128, 128);
+  g.addColorStop(0, "rgba(255,196,160,1)"); g.addColorStop(.25, "rgba(237,106,20,.65)"); g.addColorStop(1, "rgba(237,106,20,0)"); x.fillStyle = g; x.fillRect(0, 0, 128, 128);
   return new THREE.CanvasTexture(c);
 }
 const texBrillo = brillo();
 const punto = new THREE.Group(); escena.add(punto);
-punto.add(new THREE.Mesh(new THREE.SphereGeometry(.11, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffe2a8, toneMapped: false })));
+punto.add(new THREE.Mesh(new THREE.SphereGeometry(.11, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffd2b4, toneMapped: false })));
 const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: texBrillo, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, toneMapped: false })); halo.scale.setScalar(1.3); punto.add(halo);
 const estela = Array.from({ length: 7 }, (_, i) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: texBrillo, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: .5 * (1 - i / 7), toneMapped: false })); s.scale.setScalar(.7 * (1 - i / 9)); escena.add(s); return s; });
 // el anillo de alerta en el piso
@@ -235,7 +235,7 @@ const etiquetas = ESTACIONES.map((e, i) => {
 });
 const tag = (txt, extra = "") => { const el = document.createElement("span"); el.className = "tag3d " + extra; el.textContent = txt; capa.appendChild(el); return el; };
 const tags = [tag("Persona"), tag("Persona"), tag("Persona"), tag("Montacargas")];
-tags[3].style.setProperty("--c", "#FF8A00");
+tags[3].style.setProperty("--c", "#ED6A14");
 const tagAlerta = tag("Riesgo persona–vehículo", "tag3d--alerta");
 const proy = new THREE.Vector3();
 function aPantalla(v, el, w, h, margen = 0) { proy.copy(v).project(camara); let x = (proy.x * .5 + .5) * w; const y = (-proy.y * .5 + .5) * h; if (margen) x = Math.min(x, w - margen); el.style.setProperty("--x", x.toFixed(1) + "px"); el.style.setProperty("--y", y.toFixed(1) + "px"); return x > -40 && x < w + 40 && y > -40 && y < h + 40; }
@@ -247,7 +247,7 @@ function pintarPantalla(hora) {
   const c = lienzoPantalla.getContext("2d"), W = 960, H = 560;
   c.fillStyle = "#fff"; c.fillRect(0, 0, W, H);
   c.fillStyle = "#F5F5F7"; c.fillRect(0, 0, W, 58);
-  c.fillStyle = "#FFAE1A"; c.beginPath(); c.arc(38, 29, 10, 0, 7); c.fill();
+  c.fillStyle = "#ED6A14"; c.beginPath(); c.arc(38, 29, 10, 0, 7); c.fill();
   c.fillStyle = "#0B131B"; c.font = "600 22px -apple-system, Inter, system-ui, sans-serif"; c.fillText("Lumina", 58, 37);
   c.fillStyle = "#5E6A71"; c.font = "500 18px -apple-system, Inter, system-ui, sans-serif"; c.fillText("Hallazgos · en vivo", 150, 36);
   if (video.readyState >= 2) {
@@ -268,7 +268,7 @@ function pintarCurva(k) {
   const c = lienzoCurva.getContext("2d"), W = 420, H = 260, B = [.35, .52, .44, .7, .58, .82, .66];
   c.fillStyle = "#fff"; c.fillRect(0, 0, W, H);
   c.fillStyle = "#0B131B"; c.font = "600 20px -apple-system, Inter, system-ui, sans-serif"; c.fillText("Eventos por semana", 22, 38);
-  B.forEach((b, i) => { const h = b * 160 * (i < B.length - 1 ? 1 : eo(k)); c.fillStyle = i === B.length - 1 ? "#FFAE1A" : "#D9DCDE"; c.fillRect(26 + i * 54, 232 - h, 36, h); });
+  B.forEach((b, i) => { const h = b * 160 * (i < B.length - 1 ? 1 : eo(k)); c.fillStyle = i === B.length - 1 ? "#ED6A14" : "#D9DCDE"; c.fillRect(26 + i * 54, 232 - h, 36, h); });
   texCurva.needsUpdate = true;
 }
 
