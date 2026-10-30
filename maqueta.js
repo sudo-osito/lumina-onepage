@@ -21,7 +21,7 @@ render.toneMapping = THREE.ACESFilmicToneMapping; render.toneMappingExposure = 1
 const escena = new THREE.Scene();
 const camara = new THREE.OrthographicCamera(-10, 10, 10, -10, .1, 200);
 
-const C = { blanco: 0xF4F4F2, yeso: 0xE6E7E4, gris: 0xBFC5C9, cable: 0xCDD3D6, tinta: 0x2A3036, kraft: 0xE6DCCB, ambar: 0xED6A14 };
+const C = { blanco: 0xF4F4F2, yeso: 0xE6E7E4, gris: 0xBFC5C9, cable: 0xCDD3D6, tinta: 0x2A3036, kraft: 0xE6DCCB, ambar: 0xEC6D27 };
 const mat = {
   blanco: new THREE.MeshStandardMaterial({ color: C.blanco, roughness: .92 }),
   yeso: new THREE.MeshStandardMaterial({ color: C.yeso, roughness: .95 }),
@@ -205,7 +205,7 @@ function armarCables() {
 armarCables();
 function brillo() {
   const c = Object.assign(document.createElement("canvas"), { width: 128, height: 128 }), x = c.getContext("2d"), g = x.createRadialGradient(64, 64, 0, 64, 64, 64);
-  g.addColorStop(0, "rgba(255,196,160,1)"); g.addColorStop(.25, "rgba(237,106,20,.65)"); g.addColorStop(1, "rgba(237,106,20,0)"); x.fillStyle = g; x.fillRect(0, 0, 128, 128);
+  g.addColorStop(0, "rgba(255,196,160,1)"); g.addColorStop(.25, "rgba(236,109,39,.65)"); g.addColorStop(1, "rgba(236,109,39,0)"); x.fillStyle = g; x.fillRect(0, 0, 128, 128);
   return new THREE.CanvasTexture(c);
 }
 const texBrillo = brillo();
@@ -235,7 +235,7 @@ const etiquetas = ESTACIONES.map((e, i) => {
 });
 const tag = (txt, extra = "") => { const el = document.createElement("span"); el.className = "tag3d " + extra; el.textContent = txt; capa.appendChild(el); return el; };
 const tags = [tag("Persona"), tag("Persona"), tag("Persona"), tag("Montacargas")];
-tags[3].style.setProperty("--c", "#ED6A14");
+tags[3].style.setProperty("--c", "#EC6D27");
 const tagAlerta = tag("Riesgo persona–vehículo", "tag3d--alerta");
 const proy = new THREE.Vector3();
 function aPantalla(v, el, w, h, margen = 0) { proy.copy(v).project(camara); let x = (proy.x * .5 + .5) * w; const y = (-proy.y * .5 + .5) * h; if (margen) x = Math.min(x, w - margen); el.style.setProperty("--x", x.toFixed(1) + "px"); el.style.setProperty("--y", y.toFixed(1) + "px"); return x > -40 && x < w + 40 && y > -40 && y < h + 40; }
@@ -247,7 +247,7 @@ function pintarPantalla(hora) {
   const c = lienzoPantalla.getContext("2d"), W = 960, H = 560;
   c.fillStyle = "#fff"; c.fillRect(0, 0, W, H);
   c.fillStyle = "#F5F5F7"; c.fillRect(0, 0, W, 58);
-  c.fillStyle = "#ED6A14"; c.beginPath(); c.arc(38, 29, 10, 0, 7); c.fill();
+  c.fillStyle = "#EC6D27"; c.beginPath(); c.arc(38, 29, 10, 0, 7); c.fill();
   c.fillStyle = "#0B131B"; c.font = "600 22px -apple-system, Inter, system-ui, sans-serif"; c.fillText("Lumina", 58, 37);
   c.fillStyle = "#5E6A71"; c.font = "500 18px -apple-system, Inter, system-ui, sans-serif"; c.fillText("Hallazgos · en vivo", 150, 36);
   if (video.readyState >= 2) {
@@ -268,7 +268,7 @@ function pintarCurva(k) {
   const c = lienzoCurva.getContext("2d"), W = 420, H = 260, B = [.35, .52, .44, .7, .58, .82, .66];
   c.fillStyle = "#fff"; c.fillRect(0, 0, W, H);
   c.fillStyle = "#0B131B"; c.font = "600 20px -apple-system, Inter, system-ui, sans-serif"; c.fillText("Eventos por semana", 22, 38);
-  B.forEach((b, i) => { const h = b * 160 * (i < B.length - 1 ? 1 : eo(k)); c.fillStyle = i === B.length - 1 ? "#ED6A14" : "#D9DCDE"; c.fillRect(26 + i * 54, 232 - h, 36, h); });
+  B.forEach((b, i) => { const h = b * 160 * (i < B.length - 1 ? 1 : eo(k)); c.fillStyle = i === B.length - 1 ? "#EC6D27" : "#D9DCDE"; c.fillRect(26 + i * 54, 232 - h, 36, h); });
   texCurva.needsUpdate = true;
 }
 

@@ -70,7 +70,7 @@ function luz(cv, recorrido) {
     for (let y = y0; y < Math.min(h, ly + R); y += paso) for (let x = x0; x < Math.min(w, lx + R); x += paso) {
       const d = Math.hypot(x - lx, y - ly) / R; if (d >= 1) continue;
       const k = Math.pow(1 - d, 1.6);
-      c.fillStyle = k > .55 ? `rgba(207,86,11,${.2 + .45 * k})` : `rgba(237,106,20,${.06 + .55 * k})`;
+      c.fillStyle = k > .55 ? `rgba(207,86,11,${.2 + .45 * k})` : `rgba(236,109,39,${.06 + .55 * k})`;
       c.beginPath(); c.arc(x, y, 1 + 1.25 * k, 0, 7); c.fill();
     }
   }, 30);
@@ -111,7 +111,7 @@ function mapa(w, h, foco = .5) { const s = Math.max(w / 16, h / 9), vw = 16 * s,
 function cajas(t) {
   const D = (window.DET || {}).despacho || [], f = D.length ? D[Math.min(D.length - 1, Math.round(t * 25))] : null, out = [];
   if (!f) return out;
-  if (f.m) { const [mx, my, mw, mh] = f.m, x0 = Math.max(mx, .43), x1 = Math.min(mx + mw, .84 - .08 * t / 5.96); out.push({ x: x0, y: Math.max(my, .02) + 40 / 630, w: x1 - x0, h: mh - 70 / 630, col: "#ED6A14", txt: "Montacargas", m: 1 }); }
+  if (f.m) { const [mx, my, mw, mh] = f.m, x0 = Math.max(mx, .43), x1 = Math.min(mx + mw, .84 - .08 * t / 5.96); out.push({ x: x0, y: Math.max(my, .02) + 40 / 630, w: x1 - x0, h: mh - 70 / 630, col: "#EC6D27", txt: "Montacargas", m: 1 }); }
   f.p.slice(0, 2).forEach((p) => out.push({ x: p[0], y: p[1] + 30 / 630, w: p[2], h: p[3], col: "#F5A06A", txt: "Persona" }));
   return out;
 }
@@ -139,15 +139,15 @@ function dibujarRiesgo(c, M, lista, k, t, e) {
   const m = lista.find((b) => b.m), p = lista.find((b) => !b.m);
   if (m && p) {
     const ax = M.X(m.x + m.w), ay = M.Y(m.y + m.h * .45), bx = M.X(p.x), by = M.Y(p.y + p.h * .5), kk = eo(clamp(k * 1.5 - .3));
-    c.globalAlpha = kk; c.strokeStyle = "#ED6A14"; c.lineWidth = 2.5 * e; c.setLineDash([6 * e, 6 * e]); c.lineDashOffset = -t * 30;
+    c.globalAlpha = kk; c.strokeStyle = "#EC6D27"; c.lineWidth = 2.5 * e; c.setLineDash([6 * e, 6 * e]); c.lineDashOffset = -t * 30;
     c.beginPath(); c.moveTo(ax, ay); c.lineTo(lerp(ax, bx, kk), lerp(ay, by, kk)); c.stroke(); c.setLineDash([]); c.globalAlpha = 1;
-    pildora(c, (ax + bx) / 2 - 44 * e, (ay + by) / 2 + 6 * e, "Proximidad", "#ED6A14", kk, e);
+    pildora(c, (ax + bx) / 2 - 44 * e, (ay + by) / 2 + 6 * e, "Proximidad", "#EC6D27", kk, e);
   }
 }
 /* ── Detecciones reales del modelo (personas con Apple Vision, vehículos seguidos cuadro a cuadro) ── */
 const DET = window.DET || {};
 const cuadro = (cam, t) => { const D = DET[cam] || []; return D[Math.min(D.length - 1, Math.max(0, Math.round(t * 25)))] || { p: [] }; };
-const AMBAR = "#F5A06A", HONDO = "#ED6A14", ROJO = "#E5484D", VERDE = "#4ADE80";
+const AMBAR = "#F5A06A", HONDO = "#EC6D27", ROJO = "#E5484D", VERDE = "#4ADE80";
 function caja(c, M, b, col, txt, e, k = 1) {
   const x = M.X(b[0]), y = M.Y(b[1]), w = M.X(b[0] + b[2]) - x, h = M.Y(b[1] + b[3]) - y;
   c.globalAlpha = k; c.strokeStyle = col; c.lineWidth = 2 * e; c.fillStyle = col + "18"; rr(c, x, y, w, h, 12 * e); c.fill(); c.stroke(); c.globalAlpha = 1;
@@ -200,7 +200,7 @@ const CAMARAS = {
     dibujar(c, M, t, e) {
       const D = DET.trafico || [], k = Math.min(D.length - 1, Math.round(t * 25)), f = D[k] || { p: [] };
       // la ruta: dónde estuvo el montacargas desde que entró en cuadro
-      c.save(); c.strokeStyle = "rgba(237,106,20,.85)"; c.lineWidth = 3 * e; c.setLineDash([2 * e, 9 * e]); c.lineCap = "round"; c.beginPath();
+      c.save(); c.strokeStyle = "rgba(236,109,39,.85)"; c.lineWidth = 3 * e; c.setLineDash([2 * e, 9 * e]); c.lineCap = "round"; c.beginPath();
       let primero = true; for (let i = 0; i <= k; i += 2) { const v = D[i].v; if (!v) continue; const x = M.X(v[0] + v[2] / 2), y = M.Y(v[1] + v[3] * .85); primero ? c.moveTo(x, y) : c.lineTo(x, y); primero = false; }
       c.stroke(); c.restore();
       if (f.v) caja(c, M, f.v, HONDO, "Montacargas", e);
@@ -240,7 +240,7 @@ const CAMARAS = {
 window.LUMINA = { cajas, dibujarCajas, dibujarRiesgo, mapa, hora };
 {
   const m = $("#maqueta");
-  const io3d = new IntersectionObserver(([e]) => { if (!e.isIntersecting) return; io3d.disconnect(); import("./maqueta.js?v=10").catch((err) => { console.error(err); $("#maqueta-cargando").textContent = "No se pudo cargar la maqueta."; }); }, { rootMargin: "120% 0px" });
+  const io3d = new IntersectionObserver(([e]) => { if (!e.isIntersecting) return; io3d.disconnect(); import("./maqueta.js?v=11").catch((err) => { console.error(err); $("#maqueta-cargando").textContent = "No se pudo cargar la maqueta."; }); }, { rootMargin: "120% 0px" });
   io3d.observe(m);
 }
 
@@ -273,7 +273,7 @@ let pintarPila = () => {};
     // 01 · Comprender: sobre una cámara real se marcan las zonas que hay que observar
     comprender(c, w, h, t) {
       const M = cubrir(c, FOTOS.zona, 18, 18, w - 36, h - 36); if (!M) return; const e = clamp(w / 700, .75, 1.2), q = t % 7.5;
-      const Z = [["Zona restringida", [[.47, .32], [.78, .22], [.95, .62], [.54, .76]], "#E5484D"], ["Pasillo de tránsito", [[.02, .52], [.42, .4], [.5, .6], [.06, .86]], "#ED6A14"], ["Andén", [[.02, .1], [.3, .03], [.33, .3], [.03, .4]], "#F5A06A"]];
+      const Z = [["Zona restringida", [[.47, .32], [.78, .22], [.95, .62], [.54, .76]], "#E5484D"], ["Pasillo de tránsito", [[.02, .52], [.42, .4], [.5, .6], [.06, .86]], "#EC6D27"], ["Andén", [[.02, .1], [.3, .03], [.33, .3], [.03, .4]], "#F5A06A"]];
       c.save(); c.beginPath(); c.roundRect ? c.roundRect(18, 18, w - 36, h - 36, 14) : c.rect(18, 18, w - 36, h - 36); c.clip();
       Z.forEach(([txt, P, col], i) => { const k = eo(clamp((q - .4 - i * 1.3) / 1.1)); if (k <= 0) return; trazo(c, M, P, k, col, e); if (k > .9) pastilla(c, M.X(P[0][0]) + 8, M.Y(P[0][1]) + 30 * e, txt, col, e); });
       c.restore();
@@ -281,11 +281,11 @@ let pintarPila = () => {};
     // 02 · Entrenar: cada escena se revisa y queda etiquetada con lo que el modelo tiene que reconocer
     entrenar(c, w, h, t) {
       const g = 12, cw = (w - 36 - g) / 2, ch = (h - 36 - g) / 2, e = clamp(w / 900, .7, 1), q = t % 9;
-      const fuentes = [["epp", (M) => (DET.epp[25] || { p: [] }).p.map((p) => [p, p[4] ? "#4ADE80" : "#E5484D", p[4] ? "Chaleco" : "Sin chaleco"])], ["despacho", (M) => cajas(1).map((b) => [[b.x, b.y, b.w, b.h], b.m ? "#ED6A14" : "#F5A06A", b.m ? "Montacargas" : "Persona"])], ["zona", () => (DET.zona[25] || { p: [] }).p.map((p) => [p, "#F5A06A", "Persona"])], ["trafico", () => { const f = DET.trafico[25] || {}; return f.v ? [[f.v, "#ED6A14", "Montacargas"]] : []; }]];
+      const fuentes = [["epp", (M) => (DET.epp[25] || { p: [] }).p.map((p) => [p, p[4] ? "#4ADE80" : "#E5484D", p[4] ? "Chaleco" : "Sin chaleco"])], ["despacho", (M) => cajas(1).map((b) => [[b.x, b.y, b.w, b.h], b.m ? "#EC6D27" : "#F5A06A", b.m ? "Montacargas" : "Persona"])], ["zona", () => (DET.zona[25] || { p: [] }).p.map((p) => [p, "#F5A06A", "Persona"])], ["trafico", () => { const f = DET.trafico[25] || {}; return f.v ? [[f.v, "#EC6D27", "Montacargas"]] : []; }]];
       fuentes.forEach(([n, cajasDe], i) => {
         const x = 18 + (i % 2) * (cw + g), y = 18 + Math.floor(i / 2) * (ch + g), M = cubrir(c, FOTOS[n], x, y, cw, ch); if (!M) return;
         const k = clamp((q - .3 - i * 1.6) / 1.2);
-        if (k > 0 && k < 1) { const ly = y + ch * eo(k); c.fillStyle = "rgba(237,106,20,.9)"; c.fillRect(x, ly - 1.5, cw, 3); c.fillStyle = "rgba(237,106,20,.12)"; c.fillRect(x, y, cw, ly - y); }
+        if (k > 0 && k < 1) { const ly = y + ch * eo(k); c.fillStyle = "rgba(236,109,39,.9)"; c.fillRect(x, ly - 1.5, cw, 3); c.fillStyle = "rgba(236,109,39,.12)"; c.fillRect(x, y, cw, ly - y); }
         if (k >= 1) {
           cajasDe(M).forEach(([b, col, txt], j) => { const bx = M.X(b[0]), by = M.Y(b[1]), bw = M.X(b[0] + b[2]) - bx, bh = M.Y(b[1] + b[3]) - by; c.strokeStyle = col; c.lineWidth = 2 * e; rr(c, bx, by, bw, bh, 8 * e); c.stroke(); if (j < 2) pastilla(c, bx, by - 4, txt, col, e * .9); });
           c.fillStyle = "rgba(255,255,255,.94)"; rr(c, x + cw - 112 * e, y + 10, 102 * e, 26 * e, 13 * e); c.fill(); c.fillStyle = "#146C3E"; c.font = LET(12.5 * e); c.textBaseline = "middle"; c.fillText("✓ Etiquetada", x + cw - 100 * e, y + 10 + 13 * e);
@@ -306,7 +306,7 @@ let pintarPila = () => {};
         const on = q * 4 >= i, w0 = anchos[i];
         c.fillStyle = on ? "#0B131B" : "#EDEEF0"; rr(c, px, py - hh, w0, hh, hh / 2); c.fill();
         c.fillStyle = on ? "#fff" : "#5E6A71"; c.textBaseline = "middle"; c.fillText(p, px + 15 * e, py - hh / 2 + .5);
-        if (i < 3) { c.strokeStyle = q * 4 >= i + 1 ? "#ED6A14" : "#D9DCDE"; c.lineWidth = 2 * e; c.beginPath(); c.moveTo(px + w0 + 4, py - hh / 2); c.lineTo(px + w0 + sep - 4, py - hh / 2); c.stroke(); }
+        if (i < 3) { c.strokeStyle = q * 4 >= i + 1 ? "#EC6D27" : "#D9DCDE"; c.lineWidth = 2 * e; c.beginPath(); c.moveTo(px + w0 + 4, py - hh / 2); c.lineTo(px + w0 + sep - 4, py - hh / 2); c.stroke(); }
         px += w0 + sep;
       });
     },
@@ -317,9 +317,9 @@ let pintarPila = () => {};
       c.fillStyle = "#0B131B"; c.font = LET(20 * e); c.textBaseline = "alphabetic"; c.fillText("Reporte semanal", x + 26 * e, y + 44 * e);
       c.fillStyle = "#5E6A71"; c.font = LET(14 * e, 500); c.fillText("Eventos por día", x + 26 * e, y + 68 * e);
       const B = [.62, .78, .55, .9, .48, .36, .3], bw = (W * .56 - 52 * e) / B.length, base = y + H - 34 * e, alto = H - 140 * e;
-      B.forEach((b, i) => { const k = eo(clamp((q - .2 - i * .12) / .8)), bh = alto * b * k; c.fillStyle = i >= 4 ? "#ED6A14" : "#E3E5E8"; rr(c, x + 26 * e + i * bw + 4, base - bh, bw - 8, bh, 6 * e); c.fill(); });
+      B.forEach((b, i) => { const k = eo(clamp((q - .2 - i * .12) / .8)), bh = alto * b * k; c.fillStyle = i >= 4 ? "#EC6D27" : "#E3E5E8"; rr(c, x + 26 * e + i * bw + 4, base - bh, bw - 8, bh, 6 * e); c.fill(); });
       c.fillStyle = "#5E6A71"; c.font = LET(12 * e, 500); ["L", "M", "M", "J", "V", "S", "D"].forEach((d, i) => c.fillText(d, x + 26 * e + i * bw + bw / 2 - 4, base + 20 * e));
-      const fx = x + W * .6, fw = W * .4 - 26 * e, filas = [["Persona–vehículo", "Crítica", "#E5484D"], ["Uso de EPP", "Revisión", "#ED6A14"], ["Zona restringida", "Atendida", "#1F9D5A"]];
+      const fx = x + W * .6, fw = W * .4 - 26 * e, filas = [["Persona–vehículo", "Crítica", "#E5484D"], ["Uso de EPP", "Revisión", "#EC6D27"], ["Zona restringida", "Atendida", "#1F9D5A"]];
       filas.forEach(([n, est, col], i) => {
         const k = eo(clamp((q - 1.2 - i * .4) / .6)); if (k <= 0) return; const fy = y + 96 * e + i * 64 * e;
         c.globalAlpha = k; c.fillStyle = "#F5F5F7"; rr(c, fx, fy, fw, 52 * e, 12 * e); c.fill();
