@@ -161,9 +161,9 @@ const CAMARAS = {
     hud: "CAM 01 · LÍNEA DE ARMADO",
     dibujar(c, M, t, e) {
       const f = cuadro("epp", t), sin = f.p.filter((p) => !p[4]).length;
-      // verde: chaleco de alta visibilidad medido en el torso; rojo: no se ve, pide revisión
-      f.p.forEach((p) => caja(c, M, p.slice(0, 4), p[4] ? VERDE : ROJO, p[4] ? "Chaleco" : "Chaleco no visible", e * .9));
-      return { conteo: `${f.p.length} PERSONAS · ${f.p.length - sin} CON CHALECO`, evento: sin ? `Revisar EPP · ${sin === 1 ? "1 chaleco no visible" : `${sin} chalecos no visibles`}` : f.p.length ? "EPP correcto · chalecos detectados" : "" };
+      // verde: chaleco de alta visibilidad confirmado por color en el torso; si no se alcanza a confirmar, queda como persona (nunca acusamos sin certeza)
+      f.p.forEach((p) => caja(c, M, p.slice(0, 4), p[4] ? VERDE : AMBAR, p[4] ? "Chaleco" : "Persona", e * .9));
+      return { conteo: `${f.p.length} PERSONAS · ${f.p.length - sin} CON CHALECO`, evento: f.p.length - sin ? "EPP correcto · chalecos detectados" : "" };
     },
   },
   despacho: {
@@ -212,13 +212,12 @@ const CAMARAS = {
 
 /* ── Banner: las cuatro cámaras en ciclo, de fondo, con lo que Lumina detecta en cada una ── */
 {
-  const vivo = $("#camaras"), capa = $(".vivo__capa", vivo), videos = $$("video", vivo), barras = $$(".ciclo i");
+  const vivo = $("#camaras"), capa = $(".vivo__capa", vivo), videos = $$("video", vivo);
   const DUR = 6000;
   let i = 0, t0 = performance.now(), visible = false, foco = .5;
   const ir = (k) => {
     i = k; t0 = performance.now(); foco = CAMARAS[videos[k].dataset.cam].foco;
     videos.forEach((v, j) => { v.classList.toggle("on", j === k); if (j === k) { v.currentTime = 0; if (visible) v.play().catch(() => {}); } else v.pause(); });
-    barras.forEach((b, j) => b.style.setProperty("--k", j < k ? 1 : 0));
   };
   videos.forEach((v) => (v.style.objectPosition = `${CAMARAS[v.dataset.cam].foco * 100}% 50%`));
   ir(0);
@@ -231,7 +230,7 @@ const CAMARAS = {
     if (lista.length) { const cx = lista.reduce((a, b) => a + b[0] + b[2] / 2, 0) / lista.length, vis = Math.min(1, (w / h) / (16 / 9)); const meta = vis >= 1 ? .5 : clamp((cx - vis / 2) / (1 - vis)); foco += (meta - foco) * .04; }
     v.style.objectPosition = `${foco * 100}% 50%`;
     if (v.readyState >= 2) cam.dibujar(c, mapa(w, h, foco), v.currentTime, clamp(w / 1300, .8, 1.3));
-    const k = clamp((performance.now() - t0) / DUR); barras[i].style.setProperty("--k", k);
+    const k = clamp((performance.now() - t0) / DUR);
     if (k >= 1 && !QUIETO) ir((i + 1) % videos.length);
   });
 }
@@ -240,7 +239,7 @@ const CAMARAS = {
 window.LUMINA = { cajas, dibujarCajas, dibujarRiesgo, mapa, hora };
 {
   const m = $("#maqueta");
-  const io3d = new IntersectionObserver(([e]) => { if (!e.isIntersecting) return; io3d.disconnect(); import("./maqueta.js?v=11").catch((err) => { console.error(err); $("#maqueta-cargando").textContent = "No se pudo cargar la maqueta."; }); }, { rootMargin: "120% 0px" });
+  const io3d = new IntersectionObserver(([e]) => { if (!e.isIntersecting) return; io3d.disconnect(); import("./maqueta.js?v=12").catch((err) => { console.error(err); $("#maqueta-cargando").textContent = "No se pudo cargar la maqueta."; }); }, { rootMargin: "120% 0px" });
   io3d.observe(m);
 }
 
@@ -269,73 +268,61 @@ let pintarPila = () => {};
     c.fillStyle = col + Math.round(26 * k).toString(16).padStart(2, "0"); c.fill();
     c.setLineDash([total * k, total]); c.strokeStyle = col; c.lineWidth = 2.4 * e; c.stroke(); c.restore();
   };
+  // cada etapa: su video (lo que dice el texto, pasando) y encima un panel de Lumina que se arma solo
+  const tarjeta = (c, x, y, w, h, e) => { c.save(); c.shadowColor = "rgba(11,19,27,.28)"; c.shadowBlur = 40 * e; c.shadowOffsetY = 14 * e; c.fillStyle = "rgba(255,255,255,.96)"; rr(c, x, y, w, h, 18 * e); c.fill(); c.restore(); };
+  const texto = (c, t, x, y, px, col = "#0B131B", peso = 600) => { c.font = LET(px, peso); c.fillStyle = col; c.textBaseline = "middle"; c.fillText(t, x, y); };
+  const check = (c, x, y, k, e) => { c.fillStyle = k >= 1 ? "#1F9D5A" : "#E3E5E8"; c.beginPath(); c.arc(x, y, 9 * e, 0, 7); c.fill(); if (k >= 1) { c.strokeStyle = "#fff"; c.lineWidth = 2 * e; c.beginPath(); c.moveTo(x - 4 * e, y); c.lineTo(x - 1 * e, y + 3 * e); c.lineTo(x + 4.5 * e, y - 3.5 * e); c.stroke(); } else if (k > 0) { c.strokeStyle = "#EC6D27"; c.lineWidth = 2 * e; c.beginPath(); c.arc(x, y, 9 * e, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); c.stroke(); } };
+  function lista(c, x, y, w, e, titulo, sub, filas, q, paso = .9) {
+    const alto = 74 * e + filas.length * 44 * e; tarjeta(c, x, y, w, alto, e);
+    texto(c, titulo, x + 20 * e, y + 30 * e, 16 * e); texto(c, sub, x + 20 * e, y + 52 * e, 12.5 * e, "#5E6A71", 500);
+    filas.forEach((f, i) => { const k = clamp((q - .6 - i * paso) / (paso * .8)), fy = y + 86 * e + i * 44 * e; c.globalAlpha = .35 + .65 * clamp(k * 3); check(c, x + 30 * e, fy, k, e); texto(c, f, x + 50 * e, fy, 14 * e, "#0B131B", 500); c.globalAlpha = 1; });
+  }
   const ESCENAS = {
-    // 01 · Comprender: sobre una cámara real se marcan las zonas que hay que observar
-    comprender(c, w, h, t) {
-      const M = cubrir(c, FOTOS.zona, 18, 18, w - 36, h - 36); if (!M) return; const e = clamp(w / 700, .75, 1.2), q = t % 7.5;
-      const Z = [["Zona restringida", [[.47, .32], [.78, .22], [.95, .62], [.54, .76]], "#E5484D"], ["Pasillo de tránsito", [[.02, .52], [.42, .4], [.5, .6], [.06, .86]], "#EC6D27"], ["Andén", [[.02, .1], [.3, .03], [.33, .3], [.03, .4]], "#F5A06A"]];
-      c.save(); c.beginPath(); c.roundRect ? c.roundRect(18, 18, w - 36, h - 36, 14) : c.rect(18, 18, w - 36, h - 36); c.clip();
-      Z.forEach(([txt, P, col], i) => { const k = eo(clamp((q - .4 - i * 1.3) / 1.1)); if (k <= 0) return; trazo(c, M, P, k, col, e); if (k > .9) pastilla(c, M.X(P[0][0]) + 8, M.Y(P[0][1]) + 30 * e, txt, col, e); });
-      c.restore();
+    // 01 · Comprender: recorremos la operación y marcamos lo que hay que observar
+    comprender(c, w, h, t, v) {
+      const e = clamp(w / 820, .7, 1.1), q = t % 8;
+      lista(c, w - Math.min(320 * e, w * .62) - 22 * e, h - (74 + 3 * 44 + 22) * e, Math.min(320 * e, w * .62), e, "Levantamiento en terreno", "Puntos críticos de la operación", ["Cruce peatonal en el pasillo", "Acceso a la sala eléctrica", "Andén de carga y descarga"], q);
     },
-    // 02 · Entrenar: cada escena se revisa y queda etiquetada con lo que el modelo tiene que reconocer
+    // 02 · Entrenar: el modelo aprende de las escenas de cada cámara
     entrenar(c, w, h, t) {
-      const g = 12, cw = (w - 36 - g) / 2, ch = (h - 36 - g) / 2, e = clamp(w / 900, .7, 1), q = t % 9;
-      const fuentes = [["epp", (M) => (DET.epp[25] || { p: [] }).p.map((p) => [p, p[4] ? "#4ADE80" : "#E5484D", p[4] ? "Chaleco" : "Sin chaleco"])], ["despacho", (M) => cajas(1).map((b) => [[b.x, b.y, b.w, b.h], b.m ? "#EC6D27" : "#F5A06A", b.m ? "Montacargas" : "Persona"])], ["zona", () => (DET.zona[25] || { p: [] }).p.map((p) => [p, "#F5A06A", "Persona"])], ["trafico", () => { const f = DET.trafico[25] || {}; return f.v ? [[f.v, "#EC6D27", "Montacargas"]] : []; }]];
+      const e = clamp(w / 820, .7, 1.1), q = t % 9, pw = Math.min(w * .58, 430 * e), ph = pw * .72, px = w - pw - 22 * e, py = h - ph - 22 * e;
+      tarjeta(c, px, py, pw, ph, e); texto(c, "Entrenamiento del modelo", px + 18 * e, py + 26 * e, 15 * e);
+      const g = 8 * e, cw = (pw - 36 * e - g) / 2, ch = (ph - 62 * e - g) / 2;
+      const fuentes = [["epp", () => (DET.epp[25] || { p: [] }).p.filter((p) => p[4]).map((p) => [p, "#4ADE80"])], ["despacho", () => cajas(1).map((b) => [[b.x, b.y, b.w, b.h], b.m ? "#EC6D27" : "#F5A06A"])], ["zona", () => (DET.zona[25] || { p: [] }).p.map((p) => [p, "#F5A06A"])], ["trafico", () => { const f = DET.trafico[25] || {}; return f.v ? [[f.v, "#EC6D27"]] : []; }]];
       fuentes.forEach(([n, cajasDe], i) => {
-        const x = 18 + (i % 2) * (cw + g), y = 18 + Math.floor(i / 2) * (ch + g), M = cubrir(c, FOTOS[n], x, y, cw, ch); if (!M) return;
-        const k = clamp((q - .3 - i * 1.6) / 1.2);
-        if (k > 0 && k < 1) { const ly = y + ch * eo(k); c.fillStyle = "rgba(236,109,39,.9)"; c.fillRect(x, ly - 1.5, cw, 3); c.fillStyle = "rgba(236,109,39,.12)"; c.fillRect(x, y, cw, ly - y); }
-        if (k >= 1) {
-          cajasDe(M).forEach(([b, col, txt], j) => { const bx = M.X(b[0]), by = M.Y(b[1]), bw = M.X(b[0] + b[2]) - bx, bh = M.Y(b[1] + b[3]) - by; c.strokeStyle = col; c.lineWidth = 2 * e; rr(c, bx, by, bw, bh, 8 * e); c.stroke(); if (j < 2) pastilla(c, bx, by - 4, txt, col, e * .9); });
-          c.fillStyle = "rgba(255,255,255,.94)"; rr(c, x + cw - 112 * e, y + 10, 102 * e, 26 * e, 13 * e); c.fill(); c.fillStyle = "#146C3E"; c.font = LET(12.5 * e); c.textBaseline = "middle"; c.fillText("✓ Etiquetada", x + cw - 100 * e, y + 10 + 13 * e);
-        }
+        const x = px + 18 * e + (i % 2) * (cw + g), y = py + 46 * e + Math.floor(i / 2) * (ch + g), M = cubrir(c, FOTOS[n], x, y, cw, ch); if (!M) return;
+        const k = clamp((q - .4 - i * 1.5) / 1.1);
+        if (k > 0 && k < 1) { const ly = y + ch * eo(k); c.fillStyle = "rgba(236,109,39,.9)"; c.fillRect(x, ly - 1, cw, 2); c.fillStyle = "rgba(236,109,39,.14)"; c.fillRect(x, y, cw, ly - y); }
+        if (k >= 1) { cajasDe().forEach(([b, col]) => { const bx = M.X(b[0]), by = M.Y(b[1]); c.strokeStyle = col; c.lineWidth = 1.6 * e; rr(c, bx, by, M.X(b[0] + b[2]) - bx, M.Y(b[1] + b[3]) - by, 5 * e); c.stroke(); }); check(c, x + cw - 14 * e, y + 14 * e, 1, e * .8); }
       });
     },
-    // 03 · Integrar: la cámara real detecta y la señal recorre IA, baliza y aviso
-    integrar(c, w, h, t, v) {
-      const x = 18, y = 18, W = w - 36, H = h - 36, e = clamp(w / 800, .75, 1.15);
-      c.save(); c.beginPath(); c.roundRect ? c.roundRect(x, y, W, H, 14) : c.rect(x, y, W, H); c.clip();
-      if (v.readyState >= 2) { const s = Math.max(W / v.videoWidth, H / v.videoHeight); c.drawImage(v, x + (W - v.videoWidth * s) / 2, y + (H - v.videoHeight * s) / 2, v.videoWidth * s, v.videoHeight * s); }
-      c.translate(x, y); CAMARAS.trafico.dibujar(c, mapa(W, H), v.currentTime, e); c.restore();
-      const pasos = ["Cámara", "IA", "Baliza", "Aviso"], q = (t % 4.8) / 4.8;
-      c.font = LET(13 * e); const anchos = pasos.map((p) => c.measureText(p).width + 30 * e), sep = 26 * e, total = anchos.reduce((a, b) => a + b, 0) + sep * 3;
-      let px = x + (W - total) / 2; const py = y + H - 22 * e, hh = 32 * e;
-      c.fillStyle = "rgba(255,255,255,.9)"; rr(c, px - 10 * e, py - hh - 8 * e, total + 20 * e, hh + 16 * e, (hh + 16 * e) / 2); c.fill();
-      pasos.forEach((p, i) => {
-        const on = q * 4 >= i, w0 = anchos[i];
-        c.fillStyle = on ? "#0B131B" : "#EDEEF0"; rr(c, px, py - hh, w0, hh, hh / 2); c.fill();
-        c.fillStyle = on ? "#fff" : "#5E6A71"; c.textBaseline = "middle"; c.fillText(p, px + 15 * e, py - hh / 2 + .5);
-        if (i < 3) { c.strokeStyle = q * 4 >= i + 1 ? "#EC6D27" : "#D9DCDE"; c.lineWidth = 2 * e; c.beginPath(); c.moveTo(px + w0 + 4, py - hh / 2); c.lineTo(px + w0 + sep - 4, py - hh / 2); c.stroke(); }
-        px += w0 + sep;
-      });
+    // 03 · Integrar: la cámara recién instalada queda conectada a la IA, la baliza y el aviso
+    integrar(c, w, h, t) {
+      const e = clamp(w / 820, .7, 1.1), q = t % 9;
+      lista(c, w - Math.min(320 * e, w * .62) - 22 * e, h - (74 + 4 * 44 + 22) * e, Math.min(320 * e, w * .62), e, "CAM 05 · Acceso norte", "Nueva cámara en la red", ["Video en vivo recibido", "Detección de personas activa", "Baliza del pasillo enlazada", "Aviso a jefatura configurado"], q, .8);
     },
-    // 04 · Acompañar: el reporte de la semana se arma solo
+    // 04 · Acompañar: el equipo revisa el reporte de la semana
     acompanar(c, w, h, t) {
-      const x = 18, y = 18, W = w - 36, H = h - 36, e = clamp(w / 800, .75, 1.15), q = t % 8;
-      c.fillStyle = "#fff"; rr(c, x, y, W, H, 14); c.fill();
-      c.fillStyle = "#0B131B"; c.font = LET(20 * e); c.textBaseline = "alphabetic"; c.fillText("Reporte semanal", x + 26 * e, y + 44 * e);
-      c.fillStyle = "#5E6A71"; c.font = LET(14 * e, 500); c.fillText("Eventos por día", x + 26 * e, y + 68 * e);
-      const B = [.62, .78, .55, .9, .48, .36, .3], bw = (W * .56 - 52 * e) / B.length, base = y + H - 34 * e, alto = H - 140 * e;
-      B.forEach((b, i) => { const k = eo(clamp((q - .2 - i * .12) / .8)), bh = alto * b * k; c.fillStyle = i >= 4 ? "#EC6D27" : "#E3E5E8"; rr(c, x + 26 * e + i * bw + 4, base - bh, bw - 8, bh, 6 * e); c.fill(); });
-      c.fillStyle = "#5E6A71"; c.font = LET(12 * e, 500); ["L", "M", "M", "J", "V", "S", "D"].forEach((d, i) => c.fillText(d, x + 26 * e + i * bw + bw / 2 - 4, base + 20 * e));
-      const fx = x + W * .6, fw = W * .4 - 26 * e, filas = [["Persona–vehículo", "Crítica", "#E5484D"], ["Uso de EPP", "Revisión", "#EC6D27"], ["Zona restringida", "Atendida", "#1F9D5A"]];
-      filas.forEach(([n, est, col], i) => {
-        const k = eo(clamp((q - 1.2 - i * .4) / .6)); if (k <= 0) return; const fy = y + 96 * e + i * 64 * e;
-        c.globalAlpha = k; c.fillStyle = "#F5F5F7"; rr(c, fx, fy, fw, 52 * e, 12 * e); c.fill();
-        c.fillStyle = col; c.beginPath(); c.arc(fx + 18 * e, fy + 26 * e, 4.5 * e, 0, 7); c.fill();
-        c.fillStyle = "#0B131B"; c.font = LET(14 * e); c.textBaseline = "middle"; c.fillText(n, fx + 32 * e, fy + 19 * e);
-        c.fillStyle = "#5E6A71"; c.font = LET(12.5 * e, 500); c.fillText(est, fx + 32 * e, fy + 36 * e); c.globalAlpha = 1;
-      });
-      const kk = eo(clamp((q - 2.6) / .8));
-      if (kk > 0) { c.globalAlpha = kk; c.fillStyle = "#0B131B"; rr(c, fx, y + 96 * e + 3 * 64 * e, fw, 52 * e, 12 * e); c.fill(); c.fillStyle = "#F5A06A"; c.font = LET(13 * e); c.fillText("Observación", fx + 16 * e, y + 96 * e + 3 * 64 * e + 18 * e); c.fillStyle = "#fff"; c.font = LET(13.5 * e, 500); c.fillText("Reforzar el cruce del pasillo 2", fx + 16 * e, y + 96 * e + 3 * 64 * e + 36 * e); c.globalAlpha = 1; }
+      const e = clamp(w / 820, .7, 1.1), q = t % 8, pw = Math.min(w * .5, 340 * e), ph = 210 * e, px = 22 * e, py = h - ph - 22 * e;
+      tarjeta(c, px, py, pw, ph, e); texto(c, "Reporte semanal", px + 20 * e, py + 28 * e, 16 * e); texto(c, "Eventos por día", px + 20 * e, py + 50 * e, 12.5 * e, "#5E6A71", 500);
+      const B = [.62, .78, .55, .9, .48, .36, .3], bw = (pw - 40 * e) / B.length, base = py + ph - 34 * e, alto = ph - 104 * e;
+      B.forEach((b, i) => { const k = eo(clamp((q - .3 - i * .12) / .8)), bh = alto * b * k; c.fillStyle = i >= 4 ? "#EC6D27" : "#E3E5E8"; rr(c, px + 20 * e + i * bw + 3, base - bh, bw - 6, bh, 5 * e); c.fill(); });
+      ["L", "M", "M", "J", "V", "S", "D"].forEach((d, i) => texto(c, d, px + 20 * e + i * bw + bw / 2 - 4 * e, base + 16 * e, 11.5 * e, "#5E6A71", 500));
+      const kk = eo(clamp((q - 2) / .7));
+      if (kk > 0) { c.globalAlpha = kk; const ox = Math.min(px + pw + 14 * e, w - 250 * e - 22 * e), oy = py + ph - 64 * e; c.fillStyle = "#0B131B"; rr(c, ox, oy, 250 * e, 64 * e, 14 * e); c.fill(); texto(c, "Observación", ox + 16 * e, oy + 22 * e, 12.5 * e, "#F5A06A"); texto(c, "Eventos a la baja desde el viernes", ox + 16 * e, oy + 43 * e, 13 * e, "#fff", 500); c.globalAlpha = 1; }
     },
   };
-  const videoIntegrar = Object.assign(document.createElement("video"), { muted: true, loop: true, playsInline: true, preload: "none", src: "recursos/video/trafico.mp4?v=4" });
+  // fondo de cada tarjeta: su video, a todo el panel
   $$("canvas[data-escena]").forEach((cv) => {
-    const tipo = cv.dataset.escena; let t0 = performance.now();
-    alVer(cv, () => { t0 = performance.now(); if (tipo === "integrar") { videoIntegrar.preload = "auto"; videoIntegrar.play().catch(() => {}); } }, () => tipo === "integrar" && videoIntegrar.pause(), 0);
-    bucleVisible(cv, () => { const { c, w, h } = lienzo(cv); ESCENAS[tipo](c, w, h, QUIETO ? 99 : (performance.now() - t0) / 1000, videoIntegrar); }, 30);
+    const tipo = cv.dataset.escena, v = Object.assign(document.createElement("video"), { muted: true, loop: true, playsInline: true, preload: "none", src: `recursos/video/metodo/${tipo}.mp4?v=2`, poster: `recursos/video/metodo/${tipo}.jpg` });
+    let t0 = performance.now();
+    alVer(cv, () => { t0 = performance.now(); v.preload = "auto"; v.play().catch(() => {}); }, () => v.pause(), 0);
+    bucleVisible(cv, () => {
+      const { c, w, h } = lienzo(cv);
+      if (v.readyState >= 2) { const s = Math.max(w / v.videoWidth, h / v.videoHeight); c.drawImage(v, (w - v.videoWidth * s) / 2, (h - v.videoHeight * s) / 2, v.videoWidth * s, v.videoHeight * s); }
+      const g = c.createLinearGradient(0, h * .45, 0, h); g.addColorStop(0, "rgba(7,9,11,0)"); g.addColorStop(1, "rgba(7,9,11,.35)"); c.fillStyle = g; c.fillRect(0, 0, w, h);
+      ESCENAS[tipo](c, w, h, QUIETO ? 99 : (performance.now() - t0) / 1000);
+    }, 30);
   });
 }
 
