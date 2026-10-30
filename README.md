@@ -3,6 +3,7 @@
 Página de una sola vista para Lumina, el servicio de visión artificial con IA de Optimizo (antes «Cámaras con IA» de Neisstech). Mismo esqueleto que la one-page de Médula y la v6 de Optimizo (siempre clara, retícula de cuatro columnas, texto que se escribe), con la identidad de Lumina: ámbar `#FFAE1A` (claro `#FFD37A`, hondo `#F08A00`, texto `#A35C00`), tinta de Optimizo y SF.
 
 - **En línea:** https://sudo-osito.github.io/lumina-onepage/ (GitHub Pages, rama `main`; cada push republica).
+- **Producción:** https://optimizo.ai/superpoder-lumina (Worker `web-optimizo` → Worker `web-lumina`, rutas relativas). Remote `optimizo` = `optimizo-cl/web-lumina` (privado, Cloudflare): empujar a `origin` **y** a `optimizo`.
 - **Local:** `python3 -m http.server 4412 --bind 127.0.0.1` → http://127.0.0.1:4412/
 - **CTA:** siempre «Agenda tu Discovery» (regla de Max). Todos llevan al cierre (`#discovery`), y el del cierre abre WhatsApp +56 9 5708 0410 con el mensaje del Discovery.
 - **Textos:** narrativa de Optimizo V1.0 (C: héroe · A: cierre · D: frase) + contenido de https://neisstech-camaras-ia.netlify.app/. Lo que es demo está marcado como ilustrativo.
