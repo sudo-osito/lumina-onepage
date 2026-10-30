@@ -1,0 +1,13 @@
+# Lo que NO se publica en Cloudflare (solo herramientas y archivos del repo)
+.git
+.github
+.assetsignore
+wrangler.jsonc
+src
+README.md
+_herramientas
+_tmp
+_*.html
+*.ai
+*.pt
+recursos/video/yolo11m.pt
