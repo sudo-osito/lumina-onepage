@@ -145,6 +145,10 @@ section[id] { scroll-margin-top: 72px; }
 .tag3d { position: absolute; left: 0; top: 0; transform: translate(var(--x), var(--y)) translate(-50%, -100%); display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px 0 8px; border-radius: 999px; background: rgba(15, 11, 6, .84); color: #fff; font-size: 12px; font-weight: 600; white-space: nowrap; opacity: 0; transition: opacity .35s; }
 .tag3d::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--c, var(--lumina-claro)); }
 .tag3d.on { opacity: 1; }
+.tag3d--ciego { background: rgba(229, 72, 77, .92); }
+.tag3d--ciego::before { background: #fff; }
+.tag3d--dato { height: 30px; padding: 0 13px 0 10px; font-size: 13px; background: var(--tinta); --c: var(--lumina); }
+.tag3d--aviso { height: 34px; padding: 0 14px 0 11px; font-size: 13.5px; background: #fff; color: var(--tinta); box-shadow: 0 14px 30px -12px rgba(11, 19, 27, .45); --c: var(--lumina); }
 .tag3d--alerta { height: 30px; padding: 0 13px 0 10px; font-size: 13px; background: #fff; color: var(--tinta); box-shadow: 0 14px 30px -14px rgba(11, 19, 27, .5); --c: var(--critica); }
 
 .estaciones { display: grid; grid-template-columns: repeat(6, 1fr); border-top: 1px solid var(--linea); }
