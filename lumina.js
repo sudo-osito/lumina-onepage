@@ -36,19 +36,21 @@ function lienzo(cv) {
 }
 
 /* ── La luz de Lumina: una malla de puntos que casi no se ve; donde pasa la luz, los puntos se encienden ── */
+const BLANCA = { mundo: true };
 const LUCES = {
+  mundo: (t, w, h) => [w * (.5 + .3 * Math.sin(t * .17)), h * (.5 + .25 * Math.sin(t * .21 + 1))],
   // el héroe: la luz recorre la mitad derecha y sigue al puntero; el cierre: sube desde abajo, al centro
   heroe: (t, w, h) => [MOVIL() ? w * (.5 + .3 * Math.sin(t * .23)) : w * (.8 + .13 * Math.sin(t * .21)), h * (.3 + .18 * Math.sin(t * .17 + 1.3))],
   fin: (t, w, h) => [w * (.5 + .22 * Math.sin(t * .19)), h * (.78 + .1 * Math.sin(t * .23 + .7))],
 };
-function luz(cv, recorrido) {
+function luz(cv, recorrido, blanca = false) {
   const sec = cv.parentElement, ptr = { x: 0, y: 0, dentro: false };
   let base = null, paso = 16, bw = 0, bh = 0, t = Math.random() * 20, lx = null, ly = null, previo = performance.now();
   const malla = (w, h) => {
     paso = w < 600 ? 14 : 16; bw = w; bh = h;
     const dpr = Math.min(2, devicePixelRatio || 1);
     base = document.createElement("canvas"); base.width = Math.round(w * dpr); base.height = Math.round(h * dpr);
-    const b = base.getContext("2d"); b.scale(dpr, dpr); b.fillStyle = "rgba(11,19,27,.075)";
+    const b = base.getContext("2d"); b.scale(dpr, dpr); b.fillStyle = blanca ? "rgba(255,255,255,.16)" : "rgba(11,19,27,.075)";
     for (let y = paso / 2; y < h; y += paso) for (let x = paso / 2; x < w; x += paso) { b.beginPath(); b.arc(x, y, 1, 0, 7); b.fill(); }
   };
   sec.addEventListener("pointermove", (e) => { const r = cv.getBoundingClientRect(); ptr.x = e.clientX - r.left; ptr.y = e.clientY - r.top; ptr.dentro = e.pointerType === "mouse"; });
@@ -64,18 +66,18 @@ function luz(cv, recorrido) {
     const R = Math.min(300, Math.max(180, w * .2));
     c.drawImage(base, 0, 0, w, h);
     const g = c.createRadialGradient(lx, ly, 0, lx, ly, R * 1.9);
-    g.addColorStop(0, "rgba(243,130,60,.1)"); g.addColorStop(.35, "rgba(243,130,60,.05)"); g.addColorStop(.7, "rgba(243,130,60,.015)"); g.addColorStop(1, "rgba(243,130,60,0)");
+    const cg = blanca ? "255,255,255" : "243,130,60"; g.addColorStop(0, `rgba(${cg},.1)`); g.addColorStop(.35, `rgba(${cg},.05)`); g.addColorStop(.7, `rgba(${cg},.015)`); g.addColorStop(1, "rgba(243,130,60,0)");
     c.fillStyle = g; c.fillRect(lx - R * 2, ly - R * 2, R * 4, R * 4);
     const x0 = Math.max(paso / 2, Math.floor((lx - R) / paso) * paso + paso / 2), y0 = Math.max(paso / 2, Math.floor((ly - R) / paso) * paso + paso / 2);
     for (let y = y0; y < Math.min(h, ly + R); y += paso) for (let x = x0; x < Math.min(w, lx + R); x += paso) {
       const d = Math.hypot(x - lx, y - ly) / R; if (d >= 1) continue;
       const k = Math.pow(1 - d, 1.6);
-      c.fillStyle = k > .55 ? `rgba(207,86,11,${.2 + .45 * k})` : `rgba(236,109,39,${.06 + .55 * k})`;
+      c.fillStyle = blanca ? `rgba(255,255,255,${.15 + .7 * k})` : k > .55 ? `rgba(207,86,11,${.2 + .45 * k})` : `rgba(236,109,39,${.06 + .55 * k})`;
       c.beginPath(); c.arc(x, y, 1 + 1.25 * k, 0, 7); c.fill();
     }
   }, 30);
 }
-$$("canvas[data-luz]").forEach((cv) => luz(cv, LUCES[cv.dataset.luz]));
+$$("canvas[data-luz]").forEach((cv) => luz(cv, LUCES[cv.dataset.luz], !!BLANCA[cv.dataset.luz]));
 
 /* ── Texto que se escribe y se borra, como un teclado ── */
 const PRISA = { v: 1 }; // si el usuario insiste con el scroll mientras algo se escribe, se escribe más rápido (nunca de golpe)
@@ -239,7 +241,7 @@ const CAMARAS = {
 window.LUMINA = { cajas, dibujarCajas, dibujarRiesgo, mapa, hora };
 {
   const m = $("#maqueta");
-  const io3d = new IntersectionObserver(([e]) => { if (!e.isIntersecting) return; io3d.disconnect(); import("./maqueta.js?v=15").catch((err) => { console.error(err); $("#maqueta-cargando").textContent = "No se pudo cargar la maqueta."; }); }, { rootMargin: "120% 0px" });
+  const io3d = new IntersectionObserver(([e]) => { if (!e.isIntersecting) return; io3d.disconnect(); import("./maqueta.js?v=16").catch((err) => { console.error(err); $("#maqueta-cargando").textContent = "No se pudo cargar la maqueta."; }); }, { rootMargin: "120% 0px" });
   io3d.observe(m);
 }
 
@@ -326,6 +328,92 @@ let pintarPila = () => {};
   });
 }
 
+/* ── 01 · Hoy: el muro de cámaras en gris; llega la luz de Lumina y las cámaras se encienden y ven ── */
+let pintarHoy = () => {};
+{
+  const sec = $("#hoy"), cab = $("#hoy-cab"), fin = $("#hoy-fin"), barra = $("#hoy-barra"), piezas = $$("#muro .cm, #muro .sn"), cams = $$("#muro .cm"), sints = $$("#muro .sn");
+  // el póster de cada video, en color y en gris (calculado una vez), y sus detecciones reales de ese cuadro
+  const fotos = {};
+  const gris = (img) => { const c = Object.assign(document.createElement("canvas"), { width: img.naturalWidth, height: img.naturalHeight }), x = c.getContext("2d"); x.drawImage(img, 0, 0); const d = x.getImageData(0, 0, c.width, c.height), p = d.data; for (let i = 0; i < p.length; i += 4) { const g = (p[i] * .3 + p[i + 1] * .59 + p[i + 2] * .11) * .82; p[i] = p[i + 1] = p[i + 2] = g; } x.putImageData(d, 0, 0); return c; };
+  ["epp", "despacho", "zona", "trafico"].forEach((n) => { const img = new Image(); img.onload = () => (fotos[n] = { img, gris: gris(img) }); img.src = `recursos/video/${n}.jpg?v=4`; });
+  const cajasDe = (n) => n === "despacho" ? cajas(1).map((b) => [[b.x, b.y, b.w, b.h], b.m ? "#EC6D27" : "#F5A06A", b.m ? "Montacargas" : "Persona"]) : n === "trafico" ? ((DET.trafico[25] || {}).v ? [[DET.trafico[25].v, "#EC6D27", "Montacargas"]] : []) : ((DET[n][25] || { p: [] }).p.filter((p) => n !== "epp" || p[4]).map((p) => [p, n === "epp" ? "#4ADE80" : "#F5A06A", n === "epp" ? "Chaleco" : "Persona"]));
+  const fase = (p, a, b) => clamp((p - a) / (b - a));
+  let ultimoReloj = 0;
+  pintarHoy = () => {
+    const r = sec.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;
+    const p = clamp(-r.top / (r.height - innerHeight));
+    barra.style.setProperty("--p", p);
+    // el título entra y al final sube y se va
+    const vis = eo(fase(p, 0, .08)) * (1 - fase(p, .52, .61));
+    cab.style.setProperty("--vis", vis); cab.style.setProperty("--sube", `${-fase(p, .52, .61) * 60}px`);
+    // las cámaras y los problemas llegan cada uno desde su lado; al final se abren hacia afuera
+    piezas.forEach((el, i) => {
+      const [dx, dy] = el.dataset.desde.split(",").map(Number), k = eo(fase(p, .06 + i * .035, .22 + i * .035)), sale = fase(p, .56, .68);
+      el.style.setProperty("--a", k * (1 - sale));
+      el.style.setProperty("--tx", `${(1 - k) * dx * 160 + sale * dx * 120}px`); el.style.setProperty("--ty", `${(1 - k) * dy * 120 + sale * dy * 90}px`);
+      el.style.setProperty("--sc", .9 + .1 * k);
+    });
+    // la luz: cada cámara se enciende (gris → color + lo que detecta) y los problemas pasan a verde
+    const luzK = fase(p, .36, .56);
+    cams.forEach((el, i) => (el._k = eo(fase(luzK, i * .18, i * .18 + .4))));
+    sints.forEach((el, i) => el.classList.toggle("ok", luzK > .55 + i * .12));
+    $(".hoy__sim", fin).style.setProperty("--sim", eo(fase(p, .62, .72)));
+    fin.querySelector(".hoy__frase").style.setProperty("--f", eo(fase(p, .7, .8)));
+    $("#eso").style.setProperty("--e", eo(fase(p, .82, .92)));
+    const ahora = Date.now();
+    if (ahora - ultimoReloj > 500) { ultimoReloj = ahora; $$(".cm__hora", sec).forEach((h) => (h.textContent = hora(new Date(ahora + +h.dataset.off * 1000)))); }
+  };
+  // las cámaras se dibujan solas mientras la escena está en pantalla
+  bucleVisible(sec, () => {
+    cams.forEach((el) => {
+      const cv = $("canvas", el), f = fotos[el.dataset.fuente]; if (!f || !cv.offsetWidth) return;
+      const { c, w, h } = lienzo(cv), k = el._k || 0, s = Math.max(w / f.img.naturalWidth, h / f.img.naturalHeight), iw = f.img.naturalWidth * s, ih = f.img.naturalHeight * s, ox = (w - iw) / 2, oy = (h - ih) / 2;
+      c.drawImage(f.gris, ox, oy, iw, ih);
+      if (k > 0) { c.globalAlpha = k; c.drawImage(f.img, ox, oy, iw, ih); c.globalAlpha = 1;
+        const M = { X: (n) => ox + n * iw, Y: (n) => oy + n * ih }, e = clamp(w / 520, .55, .8);
+        cajasDe(el.dataset.fuente).slice(0, 4).forEach(([b, col, txt], j) => { const kk = clamp(k * 1.6 - j * .15); if (kk <= 0) return; c.globalAlpha = kk; const x = M.X(b[0]), y = M.Y(b[1]), bw = M.X(b[0] + b[2]) - x, bh = M.Y(b[1] + b[3]) - y; c.strokeStyle = col; c.lineWidth = 1.6; rr(c, x, y, bw, bh, 6); c.stroke(); if (j < 2) pildora(c, x, y, txt, col, kk, e); c.globalAlpha = 1; });
+      }
+    });
+  }, 24);
+}
+
+/* ── 02 · Sin / Con: la línea baja con el scroll y cada fila se enciende al pasar ── */
+let pintarVs = () => {};
+{
+  const vs = $("#vs"), llena = $("#vs-llena"), chispa = $("#vs-chispa"), filas = $$(".vs__fila", vs);
+  pintarVs = () => {
+    const r = vs.getBoundingClientRect(); if (r.bottom < -200 || r.top > innerHeight + 200) return;
+    const p = clamp((innerHeight * .62 - r.top) / r.height);
+    llena.style.setProperty("--p", p); chispa.style.setProperty("--p", p); chispa.style.setProperty("--vis", p > 0 && p < 1 ? 1 : 0);
+    filas.forEach((f) => { const fr = f.querySelector(".vs__mid").getBoundingClientRect(); f.classList.toggle("on", fr.top + fr.height / 2 < innerHeight * .62 || QUIETO); });
+  };
+}
+
+/* ── 04 · Aplicaciones: cada tarjeta, su cámara detectando en vivo ── */
+$$(".app[data-cam]").forEach((el) => {
+  const cam = el.dataset.cam, cv = $("canvas", el), v = Object.assign(document.createElement("video"), { muted: true, loop: true, playsInline: true, preload: "none", src: `recursos/video/${cam}.mp4?v=4`, poster: `recursos/video/${cam}.jpg?v=4` });
+  alVer(el, () => { v.preload = "auto"; v.play().catch(() => {}); }, () => v.pause(), 0);
+  bucleVisible(el, () => {
+    const { c, w, h } = lienzo(cv);
+    if (v.readyState >= 2) { const s = Math.max(w / v.videoWidth, h / v.videoHeight); c.drawImage(v, (w - v.videoWidth * s) / 2, (h - v.videoHeight * s) / 2, v.videoWidth * s, v.videoHeight * s); }
+    CAMARAS[cam].dibujar(c, mapa(w, h), v.currentTime, clamp(w / 900, .65, 1));
+  }, 30);
+});
+
+/* ── El mundo Lumina: las dos líneas se encuentran al centro y lo que Lumina ve flota a distintas velocidades ── */
+let pintarMundo = () => {};
+{
+  const sec = $("#mundo"), a = $("#mundo-a"), b = $("#mundo-b"), sim = $(".mundo__sim", sec), flota = $$(".mf", sec);
+  pintarMundo = () => {
+    const r = sec.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;
+    const p = clamp(-r.top / (r.height - innerHeight)), k = eo(clamp(p / .5));
+    a.style.transform = `translateX(${(1 - k) * -60}vw)`; b.style.transform = `translateX(${(1 - k) * 60}vw)`;
+    a.style.opacity = b.style.opacity = clamp(k * 1.4);
+    sim.style.setProperty("--s", .8 + p * .5); sim.style.setProperty("--r", `${p * 90}deg`);
+    flota.forEach((f) => f.style.setProperty("--ty", `${(p - .5) * +f.dataset.v * innerHeight * .7}px`));
+  };
+}
+
 /* ── Navegación ── */
 const nav = $("#nav");
 function pintarNav() { nav.classList.toggle("bajo", scrollY > 8); }
@@ -367,27 +455,6 @@ const tramo = $("#recorrido");
 }
 function irA(y) { suave.activo = false; suave.y = suave.meta = y; scrollTo(0, y); }
 
-/* ── La frase: al llegar, la página se detiene hasta que termina de escribirse ── */
-let pintarFrase = () => {};
-{
-  const sec = $("#frase"), ls = $$(".frase__l", sec), ms = ls.map((l, i) => maquina($(".tipeo", l), { una: true, ms: i ? 16 : 8 }));
-  let estado = 0; // 0 esperando · 1 escribiendo · 2 listo
-  async function escribir() {
-    estado = 1; suave.bloqueado = true; suave.desde = performance.now(); PRISA.v = 1;
-    const r = sec.getBoundingClientRect(); irA(Math.round(scrollY + r.top + r.height / 2 - innerHeight / 2));
-    const suelta = setTimeout(() => (suave.bloqueado = false), 2000);
-    for (const [i, l] of ls.entries()) { l.classList.add("on"); await ms[i].iniciar(); await esperar(i ? 0 : 120); if (i < ls.length - 1) l.classList.remove("on"); }
-    clearTimeout(suelta); suave.bloqueado = false; estado = 2; PRISA.v = 1;
-  }
-  pintarFrase = () => {
-    if (estado || suave.viaje) return;
-    const r = sec.getBoundingClientRect(), centro = r.top + r.height / 2;
-    if (QUIETO) { if (r.top < innerHeight) { estado = 2; ms.forEach((m) => m.iniciar()); } return; }
-    if (centro <= innerHeight * .55 && r.bottom > innerHeight * .3) escribir();
-  };
-}
-
-
 /* ── Menú del celular y progreso de lectura ── */
 {
   const boton = $("#nav-menu"), menu = $("#menu-movil");
@@ -402,6 +469,6 @@ function pintarProgreso() { progreso.style.setProperty("--p", clamp(scrollY / (d
 
 /* ── Un solo bucle de scroll ── */
 let pendiente = false;
-function alScroll() { if (pendiente) return; pendiente = true; requestAnimationFrame(() => { pendiente = false; pintarNav(); pintarProgreso(); pintarFrase(); pintarPila(); }); }
+function alScroll() { if (pendiente) return; pendiente = true; requestAnimationFrame(() => { pendiente = false; pintarNav(); pintarProgreso(); pintarHoy(); pintarVs(); pintarMundo(); pintarPila(); }); }
 addEventListener("scroll", alScroll, { passive: true }); addEventListener("resize", alScroll);
 alScroll();
