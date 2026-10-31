@@ -24,3 +24,9 @@ Página de una sola vista para Lumina, el servicio de visión artificial con IA 
 - Banner: casco → despacho → bodega → zona. EPP con un modelo de EPP (Hansung-Cho/yolov8-ppe-detection, MIT) + YOLO11/ByteTrack, veredicto por persona en todo el clip (`recursos/video/epp.js`, script `_herramientas/epp_track.py`). Marcos con esquinas, ficha Casco/Chaleco ✓✗ y tarjeta de alerta «Aviso enviado al jefe de turno». Zona restringida = la balanza marcada con cinta, achurada.
 - 01 Desafío (videos reales en gris → color con lo detectado), 02 Beneficios (4 filas), 03 Metodología, 04 Aplicaciones, mundo, 05 Cómo funciona (4 fases: detecta → procesa → aviso al jefe → va al lugar; arriba solo la fase en curso), 06 Preguntas.
 - Parallax: banner que se queda atrás, columnas de Aplicaciones a distinta velocidad. QA: `LUMINA_BANNER(n)`, `LUMINA.maquetaIr(fase, k)`.
+
+## v13 · celular (31-oct)
+- **Videos en iPhone:** todo video vive dentro de la página, bajo su lienzo (`videoEn` en `lumina.js`); Safari no reproduce videos sueltos. Si el celular bloquea la reproducción automática (bajo consumo), se reintenta al primer toque. Las detecciones solo se dibujan con el video corriendo.
+- **Cloudflare (lumina.optimizo.ai):** los assets no responden por tramos y Safari lo exige; `src/index.js` corta el tramo y responde 206 en `/recursos/video/*` (mismo arreglo que web-optimizo).
+- **Menú del celular:** hoja blanca a pantalla completa con las 6 secciones numeradas y el CTA abajo; desde el menú se salta directo.
+- **Desafío en celular:** título arriba, cámaras en 2 × 2 y los tres problemas debajo. Metodología con el texto arriba. Aplicaciones sin parallax en celular (se pisaban) y tarjetas más altas. Mundo en 4 líneas grandes. Maqueta más cerca en vertical; la vista de la cámara abajo a la izquierda.
