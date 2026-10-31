@@ -118,8 +118,17 @@ function cajas(t) {
   return out;
 }
 const rr = (c, x, y, w, h, r) => { c.beginPath(); c.roundRect ? c.roundRect(x, y, w, h, r) : c.rect(x, y, w, h); };
+let TOPE = 4;   // las etiquetas no suben más que esto (en el banner, bajo la barra de navegación)
+// el marco de una detección: esquinas firmes y un contorno tenue
+function esquinas(c, x, y, w, h, col, e) {
+  c.fillStyle = col + "14"; rr(c, x, y, w, h, 10 * e); c.fill();
+  c.save(); c.globalAlpha *= .45; c.strokeStyle = col; c.lineWidth = 1 * e; c.stroke(); c.restore();
+  const L = Math.min(w, h) * .16; c.strokeStyle = col; c.lineWidth = 3 * e; c.lineCap = "round"; c.lineJoin = "round"; c.beginPath();
+  [[x, y, 1, 1], [x + w, y, -1, 1], [x, y + h, 1, -1], [x + w, y + h, -1, -1]].forEach(([a, b, sx, sy]) => { c.moveTo(a, b + sy * L); c.lineTo(a, b); c.lineTo(a + sx * L, b); });
+  c.stroke();
+}
 function pildora(c, x, y, txt, col, k, e) {
-  const fs = 12.5 * e; c.font = LETRA(fs); const tw = c.measureText(txt).width + 22 * e, hh = 24 * e, ly = Math.max(y - hh - 6 * e, 4);
+  const fs = 12.5 * e; c.font = LETRA(fs); const tw = c.measureText(txt).width + 22 * e, hh = 24 * e, ly = Math.max(y - hh - 6 * e, TOPE);
   c.globalAlpha = k; c.fillStyle = "rgba(15,11,6,.82)"; rr(c, x, ly, tw, hh, hh / 2); c.fill();
   c.fillStyle = col; c.beginPath(); c.arc(x + 11 * e, ly + hh / 2, 3.5 * e, 0, 7); c.fill();
   c.fillStyle = "#fff"; c.textBaseline = "middle"; c.fillText(txt, x + 19 * e, ly + hh / 2 + .5); c.globalAlpha = 1;
@@ -128,7 +137,7 @@ function dibujarCajas(c, M, lista, k, e) {
   lista.forEach((b, i) => {
     const ki = eo(clamp(k * 1.4 - i * .15)); if (ki <= 0) return;
     const g = (1 - ki) * 10, x = M.X(b.x) - g, y = M.Y(b.y) - g, w = M.X(b.x + b.w) - M.X(b.x) + 2 * g, h = M.Y(b.y + b.h) - M.Y(b.y) + 2 * g;
-    c.globalAlpha = ki; c.strokeStyle = b.col; c.lineWidth = 2 * e; c.fillStyle = b.col + "18"; rr(c, x, y, w, h, 14 * e); c.fill(); c.stroke(); c.globalAlpha = 1;
+    c.globalAlpha = ki; esquinas(c, x, y, w, h, b.col, e); c.globalAlpha = 1;
     pildora(c, x, y, b.txt, b.col, ki, e);
   });
 }
@@ -152,15 +161,58 @@ const cuadro = (cam, t) => { const D = DET[cam] || []; return D[Math.min(D.lengt
 const AMBAR = "#F5A06A", HONDO = "#EC6D27", ROJO = "#E5484D", VERDE = "#4ADE80";
 function caja(c, M, b, col, txt, e, k = 1) {
   const x = M.X(b[0]), y = M.Y(b[1]), w = M.X(b[0] + b[2]) - x, h = M.Y(b[1] + b[3]) - y;
-  c.globalAlpha = k; c.strokeStyle = col; c.lineWidth = 2 * e; c.fillStyle = col + "18"; rr(c, x, y, w, h, 12 * e); c.fill(); c.stroke(); c.globalAlpha = 1;
+  c.globalAlpha = k; esquinas(c, x, y, w, h, col, e); c.globalAlpha = 1;
   if (txt) pildora(c, x, y, txt, col, k, e);
   return { x, y, w, h };
 }
+// EPP: esquinas en vez de caja cerrada y una ficha con lo que la persona lleva y lo que le falta.
+// Solo se afirma lo que el modelo confirmó: sin dato (-1) no se dice nada.
+function check(c, x, y, r, si) {
+  c.fillStyle = si ? VERDE : ROJO; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill();
+  c.strokeStyle = "#0B131B"; c.lineWidth = r * .32; c.lineCap = "round"; c.beginPath();
+  if (si) { c.moveTo(x - r * .45, y + r * .02); c.lineTo(x - r * .1, y + r * .38); c.lineTo(x + r * .5, y - r * .36); }
+  else { c.moveTo(x - r * .38, y - r * .38); c.lineTo(x + r * .38, y + r * .38); c.moveTo(x + r * .38, y - r * .38); c.lineTo(x - r * .38, y + r * .38); }
+  c.stroke();
+}
+function eppPersona(c, M, p, e, t, k = 1) {
+  const [px, py, pw, ph, casco, chaleco] = p, falta = casco === 0 || chaleco === 0, ok = !falta && (casco === 1 || chaleco === 1);
+  const col = falta ? ROJO : ok ? VERDE : AMBAR, x = M.X(px), y = M.Y(py), w = M.X(px + pw) - x, h = M.Y(py + ph) - y;
+  c.save(); c.globalAlpha = k;
+  if (falta) { c.fillStyle = `rgba(229,72,77,${.08 + .05 * Math.sin(t * 6)})`; rr(c, x, y, w, h, 10 * e); c.fill(); }
+  esquinas(c, x, y, w, h, col, e);
+  const filas = [casco !== -1 && [casco ? "Casco" : "Sin casco", casco], chaleco !== -1 && [chaleco ? "Chaleco" : "Sin chaleco", chaleco]].filter(Boolean);
+  if (!filas.length) filas.push(["Persona", -1]);
+  const fs = 13 * e, fh = 24 * e, pad = 9 * e; c.font = LETRA(fs);
+  const fw = Math.max(...filas.map(([txt]) => c.measureText(txt).width)) + pad * 2 + 22 * e, alto = filas.length * fh + pad;
+  const fx = Math.min(x, M.X(1) - fw - 6 * e), fy = y - alto - 8 * e < Math.max(TOPE, 6 * e) ? Math.max(y, TOPE) + 8 * e : y - alto - 8 * e;
+  c.fillStyle = "rgba(12,14,16,.86)"; rr(c, fx, fy, fw, alto, 10 * e); c.fill();
+  c.fillStyle = col; rr(c, fx, fy, 3 * e, alto, 1.5 * e); c.fill();
+  c.textBaseline = "middle";
+  filas.forEach(([txt, si], i) => {
+    const cy = fy + pad / 2 + fh * i + fh / 2;
+    if (si === -1) { c.fillStyle = AMBAR; c.beginPath(); c.arc(fx + pad + 7 * e, cy, 4 * e, 0, 7); c.fill(); } else check(c, fx + pad + 7 * e, cy, 7.5 * e, si);
+    c.fillStyle = si === 0 ? "#FFB4B6" : "#fff"; c.fillText(txt, fx + pad + 20 * e, cy + .5);
+  });
+  c.restore();
+}
+const eppCam = (fuente, foco, hud) => ({
+  foco, hud,
+  dibujar(c, M, t, e) {
+    const f = cuadro(fuente, t), tt = performance.now() / 1000;
+    f.p.forEach((p) => eppPersona(c, M, p, e, tt));
+    const sinC = f.p.filter((p) => p[4] === 0).length, sinV = f.p.filter((p) => p[5] === 0).length;
+    const evento = sinC ? `${sinC === 1 ? "Persona" : sinC + " personas"} sin casco` : sinV ? `${sinV === 1 ? "Persona" : sinV + " personas"} sin chaleco` : "";
+    return { evento, detalle: sinC && sinV ? `${sinV === 1 ? "Tampoco lleva" : sinV + " sin"} chaleco` : "", conteo: `${f.p.length} ${f.p.length === 1 ? "persona" : "personas"}` };
+  },
+});
 // cada cámara sabe qué mirar y qué contar
 const CAMARAS = {
+  casco: eppCam("casco", .62, "CAM 01 · Patio de obra"),
+  chaleco: eppCam("chaleco", .5, "CAM 05 · Acceso a obra"),
+  inventario: eppCam("inventario", .62, "CAM 03 · Bodega"),
   epp: {
     foco: .42,
-    hud: "CAM 01 · LÍNEA DE ARMADO",
+    hud: "CAM 01 · Línea de armado",
     dibujar(c, M, t, e) {
       const f = cuadro("epp", t), sin = f.p.filter((p) => !p[4]).length;
       // verde: chaleco de alta visibilidad confirmado por color en el torso; si no se alcanza a confirmar, queda como persona (nunca acusamos sin certeza)
@@ -170,35 +222,45 @@ const CAMARAS = {
   },
   despacho: {
     foco: .78,
-    hud: "CAM 02 · ZONA DESPACHO",
+    hud: "CAM 02 · Zona de despacho",
     dibujar(c, M, t, e) {
       const lista = cajas(t), m = lista.find((b) => b.m), p = lista.find((b) => !b.m);
       dibujarRiesgo(c, M, lista, 1, performance.now() / 1000, e); dibujarCajas(c, M, lista, 1, e);
       const np = lista.filter((b) => !b.m).length;
-      return { conteo: `${np} ${np === 1 ? "PERSONA" : "PERSONAS"} · ${m ? 1 : 0} MONTACARGAS`, evento: m && p ? "Riesgo persona–vehículo" : "" };
+      return { conteo: `${np} ${np === 1 ? "PERSONA" : "PERSONAS"} · ${m ? 1 : 0} MONTACARGAS`, evento: m && p ? "Riesgo persona–vehículo" : "", detalle: m && p ? "Montacargas cerca de un peatón" : "" };
     },
   },
   zona: {
-    foco: .4,
-    hud: "CAM 03 · ZONA DE PREPARACIÓN",
-    // la zona se define en cada instalación; acá, el piso frente a los estantes
-    Z: [[.47, .32], [.78, .22], [.95, .62], [.54, .76]],
+    foco: .55,
+    hud: "CAM 04 · Zona de carga",
+    // la zona se define en cada instalación; acá, la balanza (marcada con cinta en el piso) y su perímetro de seguridad
+    Z: [[.43, .44], [.57, .39], [.68, .6], [.49, .72]],
+    pies: (p) => [p[0] + p[2] / 2, p[1] + p[3]],
     dentro([x, y]) { const P = this.Z; let d = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++) { const [xi, yi] = P[i], [xj, yj] = P[j]; if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) d = !d; } return d; },
-    entrada() { if (this._e === undefined) { const D = DET.zona || [], f = D.find((q) => q.p[0] && this.dentro([q.p[0][0] + q.p[0][2] / 2, q.p[0][1] + q.p[0][3]])); this._e = f ? f.t : Infinity; } return this._e; },
+    entrada() { if (this._e === undefined) { const D = DET.zona || [], f = D.find((q) => q.p[0] && this.dentro(this.pies(q.p[0]))); this._e = f ? f.t : Infinity; } return this._e; },
     dibujar(c, M, t, e) {
-      const f = cuadro("zona", t), p = f.p[0], ent = this.entrada(), dentro = !!p && t >= ent;
-      c.save(); c.beginPath(); this.Z.forEach(([x, y], i) => (i ? c.lineTo(M.X(x), M.Y(y)) : c.moveTo(M.X(x), M.Y(y)))); c.closePath();
-      c.fillStyle = dentro ? `rgba(229,72,77,${.12 + .06 * Math.sin(performance.now() / 160)})` : "rgba(229,72,77,.06)"; c.fill();
-      c.setLineDash([9 * e, 7 * e]); c.strokeStyle = ROJO; c.lineWidth = 2 * e; c.stroke(); c.restore();
-      pildora(c, M.X(this.Z[1][0]) - 120 * e, M.Y(this.Z[1][1]) + 2 * e, "Zona restringida", ROJO, 1, e);
+      const f = cuadro("zona", t), p = f.p[0], ent = this.entrada(), dentro = !!p && this.dentro(this.pies(p)), tt = performance.now() / 1000;
+      const pts = this.Z.map(([x, y]) => [M.X(x), M.Y(y)]), xs = pts.map((q) => q[0]), ys = pts.map((q) => q[1]);
+      const forma = () => { c.beginPath(); pts.forEach((q, i) => (i ? c.lineTo(...q) : c.moveTo(...q))); c.closePath(); };
+      // el piso de la zona: achurado de seguridad, más intenso cuando alguien entra
+      c.save(); forma(); c.fillStyle = dentro ? `rgba(229,72,77,${.22 + .1 * Math.sin(tt * 7)})` : "rgba(229,72,77,.1)"; c.fill(); c.clip();
+      c.strokeStyle = dentro ? "rgba(255,120,120,.55)" : "rgba(229,72,77,.4)"; c.lineWidth = 3 * e; c.beginPath();
+      const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys), paso = 13 * e, off = (tt * 14 * e) % paso;
+      for (let x = x0 - (y1 - y0) - paso + off; x < x1; x += paso) { c.moveTo(x, y1); c.lineTo(x + (y1 - y0), y0); }
+      c.stroke(); c.restore();
+      c.save(); forma(); c.strokeStyle = ROJO; c.lineWidth = 2.6 * e; c.lineJoin = "round"; c.stroke();
+      pts.forEach((q) => { c.fillStyle = "#fff"; c.beginPath(); c.arc(q[0], q[1], 4 * e, 0, 7); c.fill(); c.fillStyle = ROJO; c.beginPath(); c.arc(q[0], q[1], 2.4 * e, 0, 7); c.fill(); });
+      c.restore();
+      const top = pts.reduce((a, q) => (q[1] < a[1] ? q : a));
+      pildora(c, top[0] - 20 * e, top[1] - 6 * e, "Zona restringida · balanza", ROJO, 1, e);
       const seg = Math.max(0, Math.floor(t - ent));
-      if (p) caja(c, M, p, dentro ? ROJO : AMBAR, dentro ? `Permanencia 00:${String(seg).padStart(2, "0")}` : "Persona", e);
-      return { conteo: dentro ? "1 PERSONA EN ZONA" : `${f.p.length} ${f.p.length === 1 ? "PERSONA" : "PERSONAS"}`, evento: dentro ? "Ingreso a zona restringida" : "" };
+      if (p) caja(c, M, p, dentro ? ROJO : AMBAR, dentro ? `Dentro de la zona · 00:${String(seg).padStart(2, "0")}` : "Persona", e);
+      return { conteo: dentro ? "1 persona en zona" : "", evento: t >= ent ? "Ingreso a zona restringida" : "", detalle: t >= ent ? "Perímetro de la balanza · sin autorización" : "" };
     },
   },
   trafico: {
     foco: .62,
-    hud: "CAM 04 · PASILLO CENTRAL",
+    hud: "CAM 06 · Pasillo central",
     dibujar(c, M, t, e) {
       const D = DET.trafico || [], k = Math.min(D.length - 1, Math.round(t * 25)), f = D[k] || { p: [] };
       // la ruta: dónde estuvo el montacargas desde que entró en cuadro
@@ -212,17 +274,40 @@ const CAMARAS = {
   },
 };
 
+// la tarjeta de alerta del banner: qué pasó, dónde, y que el aviso ya salió
+function avisar(c, w, h, a, hud, s) {
+  const e = clamp(w / 1300, .78, 1.15), k = eo(clamp(s / .5)), k2 = eo(clamp((s - 1.1) / .45)), ancho = Math.min(330 * e, w - 32), alto = (a.detalle ? 112 : 92) * e + 40 * e * k2;
+  const x = w - ancho - (w < 700 ? 16 : 32 * e) + (1 - k) * 30, y = (w < 700 ? 78 : 96 * e);
+  c.save(); c.globalAlpha = k;
+  c.shadowColor = "rgba(0,0,0,.45)"; c.shadowBlur = 40 * e; c.shadowOffsetY = 16 * e; c.fillStyle = "rgba(18,20,22,.9)"; rr(c, x, y, ancho, alto, 18 * e); c.fill(); c.shadowColor = "transparent";
+  c.strokeStyle = "rgba(255,255,255,.1)"; c.lineWidth = 1; rr(c, x + .5, y + .5, ancho - 1, alto - 1, 18 * e); c.stroke(); c.clip();
+  const pulso = .5 + .5 * Math.sin(s * 6); c.fillStyle = `rgba(229,72,77,${.25 * pulso})`; c.beginPath(); c.arc(x + 26 * e, y + 28 * e, 10 * e, 0, 7); c.fill();
+  c.fillStyle = ROJO; c.beginPath(); c.arc(x + 26 * e, y + 28 * e, 5 * e, 0, 7); c.fill();
+  c.textBaseline = "middle"; c.font = `600 ${11 * e}px ui-monospace, Menlo, monospace`; c.fillStyle = "#FF8A8D"; c.fillText("ALERTA · " + hora(), x + 42 * e, y + 28.5 * e);
+  c.font = LETRA(18 * e); c.fillStyle = "#fff"; c.fillText(a.evento, x + 20 * e, y + 58 * e);
+  c.font = `500 ${13.5 * e}px -apple-system, "SF Pro Text", Inter, system-ui, sans-serif`; c.fillStyle = "rgba(255,255,255,.62)";
+  c.fillText(a.detalle ? `${a.detalle}` : hud, x + 20 * e, y + 81 * e); if (a.detalle) c.fillText(hud, x + 20 * e, y + 101 * e);
+  if (k2 > 0) {
+    const yy = y + (a.detalle ? 112 : 92) * e; c.globalAlpha = k * k2;
+    c.fillStyle = "rgba(255,255,255,.08)"; c.fillRect(x + 20 * e, yy, ancho - 40 * e, 1);
+    c.fillStyle = VERDE; c.beginPath(); c.arc(x + 27 * e, yy + 20 * e, 7 * e, 0, 7); c.fill();
+    c.strokeStyle = "#0B131B"; c.lineWidth = 2 * e; c.lineCap = "round"; c.beginPath(); c.moveTo(x + 23.8 * e, yy + 20 * e); c.lineTo(x + 26.3 * e, yy + 22.6 * e); c.lineTo(x + 30.6 * e, yy + 17.4 * e); c.stroke();
+    c.font = LETRA(13.5 * e); c.fillStyle = "#fff"; c.fillText("Aviso enviado al jefe de turno", x + 42 * e, yy + 20.5 * e);
+  }
+  c.restore();
+}
+
 /* ── Banner: las cuatro cámaras en ciclo, de fondo, con lo que Lumina detecta en cada una ── */
 {
   const vivo = $("#camaras"), capa = $(".vivo__capa", vivo), videos = $$("video", vivo);
   const DUR = 6000;
-  let i = 0, t0 = performance.now(), visible = false, foco = .5;
+  let i = 0, t0 = performance.now(), visible = false, foco = .5, aviso = null;
   const ir = (k) => {
-    i = k; t0 = performance.now(); foco = CAMARAS[videos[k].dataset.cam].foco;
+    i = k; t0 = performance.now(); aviso = null; foco = CAMARAS[videos[k].dataset.cam].foco;
     videos.forEach((v, j) => { v.classList.toggle("on", j === k); if (j === k) { v.currentTime = 0; if (visible) v.play().catch(() => {}); } else v.pause(); });
   };
   videos.forEach((v) => (v.style.objectPosition = `${CAMARAS[v.dataset.cam].foco * 100}% 50%`));
-  ir(0);
+  ir(0); window.LUMINA_BANNER = ir;   // para revisar: LUMINA_BANNER(n)
   alVer(vivo, () => { visible = true; videos[i].play().catch(() => {}); }, () => { visible = false; videos.forEach((v) => v.pause()); }, 0);
   bucleVisible(vivo, () => {
     const v = videos[i], { c, w, h } = lienzo(capa);
@@ -238,9 +323,12 @@ const CAMARAS = {
       const sv = Math.max(w / v.videoWidth, h / v.videoHeight), vw = v.videoWidth * sv, vh = v.videoHeight * sv;
       c.save(); c.beginPath(); c.rect(0, 0, Math.max(0, xs), h); c.clip();
       c.drawImage(v, (w - vw) * foco, (h - vh) / 2, vw, vh);
-      cam.dibujar(c, mapa(w, h, foco), v.currentTime, clamp(w / 1300, .8, 1.3));
+      TOPE = 78; const lee = cam.dibujar(c, mapa(w, h, foco), v.currentTime, clamp(w / 1300, .8, 1.3)); TOPE = 4;
       c.restore();
+      // el aviso: lo que Lumina hace con lo que vio (aparece cuando el haz ya pasó)
+      if (lee.evento && kEsc > .85 && !aviso) aviso = { t: performance.now(), ...lee };
     }
+    if (aviso) avisar(c, w, h, aviso, cam.hud, (performance.now() - aviso.t) / 1000);
     if (kEsc < 1) {
       const g = c.createLinearGradient(xs - 160, 0, xs + 4, 0); g.addColorStop(0, "rgba(236,109,39,0)"); g.addColorStop(1, "rgba(236,109,39,.32)");
       c.fillStyle = g; c.fillRect(xs - 160, 0, 164, h);
@@ -256,7 +344,7 @@ const CAMARAS = {
 window.LUMINA = { cajas, dibujarCajas, dibujarRiesgo, mapa, hora };
 {
   const m = $("#maqueta");
-  const io3d = new IntersectionObserver(([e]) => { if (!e.isIntersecting) return; io3d.disconnect(); import("./maqueta.js?v=19").catch((err) => { console.error(err); $("#maqueta-cargando").textContent = "No se pudo cargar la maqueta."; }); }, { rootMargin: "120% 0px" });
+  const io3d = new IntersectionObserver(([e]) => { if (!e.isIntersecting) return; io3d.disconnect(); import("./maqueta.js?v=20").catch((err) => { console.error(err); $("#maqueta-cargando").textContent = "No se pudo cargar la maqueta."; }); }, { rootMargin: "120% 0px" });
   io3d.observe(m);
 }
 
@@ -347,11 +435,10 @@ let pintarPila = () => {};
 let pintarHoy = () => {};
 {
   const sec = $("#hoy"), cab = $("#hoy-cab"), fin = $("#hoy-fin"), barra = $("#hoy-barra"), piezas = $$("#muro .cm, #muro .sn"), cams = $$("#muro .cm"), sints = $$("#muro .sn");
-  // el póster de cada video, en color y en gris (calculado una vez), y sus detecciones reales de ese cuadro
-  const fotos = {};
-  const gris = (img) => { const c = Object.assign(document.createElement("canvas"), { width: img.naturalWidth, height: img.naturalHeight }), x = c.getContext("2d"); x.drawImage(img, 0, 0); const d = x.getImageData(0, 0, c.width, c.height), p = d.data; for (let i = 0; i < p.length; i += 4) { const g = (p[i] * .3 + p[i + 1] * .59 + p[i + 2] * .11) * .82; p[i] = p[i + 1] = p[i + 2] = g; } x.putImageData(d, 0, 0); return c; };
-  ["epp", "despacho", "zona", "trafico"].forEach((n) => { const img = new Image(); img.onload = () => (fotos[n] = { img, gris: gris(img) }); img.src = `recursos/video/${n}.jpg?v=4`; });
-  const cajasDe = (n) => n === "despacho" ? cajas(1).map((b) => [[b.x, b.y, b.w, b.h], b.m ? "#EC6D27" : "#F5A06A", b.m ? "Montacargas" : "Persona"]) : n === "trafico" ? ((DET.trafico[25] || {}).v ? [[DET.trafico[25].v, "#EC6D27", "Montacargas"]] : []) : ((DET[n][25] || { p: [] }).p.filter((p) => n !== "epp" || p[4]).map((p) => [p, n === "epp" ? "#4ADE80" : "#F5A06A", n === "epp" ? "Chaleco" : "Persona"]));
+  // cada cámara es su video real: en gris mientras solo graba; con la luz de Lumina toma color y muestra lo que detecta
+  const vids = {};
+  cams.forEach((el) => { const n = el.dataset.fuente; vids[n] = Object.assign(document.createElement("video"), { muted: true, loop: true, playsInline: true, preload: "none", src: `recursos/video/${n}.mp4?v=6`, poster: `recursos/video/${n}.jpg?v=6` }); });
+  alVer(sec, () => Object.values(vids).forEach((v) => { v.preload = "auto"; v.play().catch(() => {}); }), () => Object.values(vids).forEach((v) => v.pause()), 0);
   const fase = (p, a, b) => clamp((p - a) / (b - a));
   let ultimoReloj = 0;
   pintarHoy = () => {
@@ -371,7 +458,7 @@ let pintarHoy = () => {};
     // la luz: cada cámara se enciende (gris → color + lo que detecta) y los problemas pasan a verde
     const luzK = fase(p, .36, .56);
     cams.forEach((el, i) => (el._k = eo(fase(luzK, i * .18, i * .18 + .4))));
-    sints.forEach((el, i) => el.classList.toggle("ok", luzK > .55 + i * .12));
+    sints.forEach((el, i) => el.classList.toggle("ok", luzK > .45 + i * .14));
     $(".hoy__sim", fin).style.setProperty("--sim", eo(fase(p, .62, .72)));
     fin.querySelector(".hoy__frase").style.setProperty("--f", eo(fase(p, .7, .8)));
     $("#eso").style.setProperty("--e", eo(fase(p, .82, .92)));
@@ -381,15 +468,13 @@ let pintarHoy = () => {};
   // las cámaras se dibujan solas mientras la escena está en pantalla
   bucleVisible(sec, () => {
     cams.forEach((el) => {
-      const cv = $("canvas", el), f = fotos[el.dataset.fuente]; if (!f || !cv.offsetWidth) return;
-      const { c, w, h } = lienzo(cv), k = el._k || 0, s = Math.max(w / f.img.naturalWidth, h / f.img.naturalHeight), iw = f.img.naturalWidth * s, ih = f.img.naturalHeight * s, ox = (w - iw) / 2, oy = (h - ih) / 2;
-      c.drawImage(f.gris, ox, oy, iw, ih);
-      if (k > 0) { c.globalAlpha = k; c.drawImage(f.img, ox, oy, iw, ih); c.globalAlpha = 1;
-        const M = { X: (n) => ox + n * iw, Y: (n) => oy + n * ih }, e = clamp(w / 520, .55, .8);
-        cajasDe(el.dataset.fuente).slice(0, 4).forEach(([b, col, txt], j) => { const kk = clamp(k * 1.6 - j * .15); if (kk <= 0) return; c.globalAlpha = kk; const x = M.X(b[0]), y = M.Y(b[1]), bw = M.X(b[0] + b[2]) - x, bh = M.Y(b[1] + b[3]) - y; c.strokeStyle = col; c.lineWidth = 1.6; rr(c, x, y, bw, bh, 6); c.stroke(); if (j < 2) pildora(c, x, y, txt, col, kk, e); c.globalAlpha = 1; });
-      }
+      const cv = $("canvas", el), n = el.dataset.fuente, v = vids[n]; if (!cv.offsetWidth || v.readyState < 2) return;
+      const { c, w, h } = lienzo(cv), k = el._k || 0, s = Math.max(w / v.videoWidth, h / v.videoHeight), iw = v.videoWidth * s, ih = v.videoHeight * s, ox = (w - iw) / 2, oy = (h - ih) / 2;
+      c.drawImage(v, ox, oy, iw, ih);
+      if (k < 1) { c.save(); c.globalCompositeOperation = "saturation"; c.globalAlpha = 1 - k; c.fillStyle = "#808080"; c.fillRect(0, 0, w, h); c.restore(); c.fillStyle = `rgba(20,22,24,${.32 * (1 - k)})`; c.fillRect(0, 0, w, h); }
+      if (k > .05) { c.save(); c.globalAlpha = k; CAMARAS[n].dibujar(c, { X: (q) => ox + q * iw, Y: (q) => oy + q * ih }, v.currentTime, clamp(w / 380, .6, .86)); c.restore(); }
     });
-  }, 24);
+  }, 30);
 }
 
 /* ── 02 · Sin / Con: la línea baja con el scroll y cada fila se enciende al pasar ── */
@@ -406,7 +491,7 @@ let pintarVs = () => {};
 
 /* ── 04 · Aplicaciones: cada tarjeta, su cámara detectando en vivo ── */
 $$(".app[data-cam]").forEach((el) => {
-  const cam = el.dataset.cam, cv = $("canvas", el), v = Object.assign(document.createElement("video"), { muted: true, loop: true, playsInline: true, preload: "none", src: `recursos/video/${cam}.mp4?v=4`, poster: `recursos/video/${cam}.jpg?v=4` });
+  const cam = el.dataset.cam, cv = $("canvas", el), v = Object.assign(document.createElement("video"), { muted: true, loop: true, playsInline: true, preload: "none", src: `recursos/video/${cam}.mp4?v=6`, poster: `recursos/video/${cam}.jpg?v=6` });
   alVer(el, () => { v.preload = "auto"; v.play().catch(() => {}); }, () => v.pause(), 0);
   bucleVisible(el, () => {
     const { c, w, h } = lienzo(cv);
@@ -425,7 +510,25 @@ let pintarMundo = () => {};
     a.style.transform = `translateX(${(1 - k) * -28}vw)`; b.style.transform = `translateX(${(1 - k) * 28}vw)`;
     a.style.opacity = b.style.opacity = clamp(k * 1.4);
     sim.style.setProperty("--s", .8 + p * .5); sim.style.setProperty("--r", `${p * 90}deg`);
-    flota.forEach((f) => f.style.setProperty("--ty", `${(p - .5) * +f.dataset.v * innerHeight * .7}px`));
+    flota.forEach((f) => f.style.setProperty("--ty", `${(p - .5) * +f.dataset.v * innerHeight * .2}px`));   // poco recorrido: nunca llegan a la frase
+  };
+}
+
+/* ── Parallax: el banner se queda atrás mientras el título sube; las tarjetas marcadas flotan a distinta velocidad ── */
+let pintarParallax = () => {};
+if (!QUIETO) {
+  const vivo = $("#camaras"), txt = $(".heroe__in"), capas = $$("[data-px]");
+  pintarParallax = () => {
+    const y = scrollY, vh = innerHeight;
+    if (y < vh * 1.2) {
+      vivo.style.translate = `0 ${y * .45}px`; vivo.style.scale = String(1 + Math.min(y / vh, 1) * .08);
+      txt.style.translate = `0 ${-y * .18}px`; txt.style.opacity = String(clamp(1 - y / (vh * .75)));
+    }
+    capas.forEach((el) => {
+      // se mide contra su contenedor: así una columna entera se mueve junta y las tarjetas nunca se pisan
+      const r = el.parentElement.getBoundingClientRect(); if (r.top > vh * 1.5 || r.bottom < -vh * .5) return;
+      el.style.setProperty("--px", `${((r.top + r.height / 2 - vh / 2) * -el.dataset.px).toFixed(1)}px`);
+    });
   };
 }
 
@@ -484,6 +587,6 @@ function pintarProgreso() { progreso.style.setProperty("--p", clamp(scrollY / (d
 
 /* ── Un solo bucle de scroll ── */
 let pendiente = false;
-function alScroll() { if (pendiente) return; pendiente = true; requestAnimationFrame(() => { pendiente = false; pintarNav(); pintarProgreso(); pintarHoy(); pintarVs(); pintarMundo(); pintarPila(); }); }
+function alScroll() { if (pendiente) return; pendiente = true; requestAnimationFrame(() => { pendiente = false; pintarNav(); pintarProgreso(); pintarParallax(); pintarHoy(); pintarVs(); pintarMundo(); pintarPila(); }); }
 addEventListener("scroll", alScroll, { passive: true }); addEventListener("resize", alScroll);
 alScroll();

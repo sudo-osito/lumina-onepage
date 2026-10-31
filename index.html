@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#FFFFFF">
 <link rel="icon" href="recursos/marcas/lumina-isotipo.svg" type="image/svg+xml">
 <link rel="preload" href="recursos/video/epp.jpg?v=4" as="image">
-<link rel="stylesheet" href="lumina.css?v=19">
+<link rel="stylesheet" href="lumina.css?v=20">
 </head>
 <body>
 
@@ -33,18 +33,18 @@
   <div class="envoltura nav__in">
     <a class="logo" href="#inicio" aria-label="Lumina, de Optimizo · inicio"><img class="logo__iso" src="recursos/marcas/lumina-isotipo.svg" alt="" width="26" height="26"><img class="logo__palabra" src="recursos/marcas/lumina-palabra.svg" alt="Lumina" width="78" height="15"><small>de Optimizo</small></a>
     <nav class="nav__links" aria-label="Secciones">
+      <a href="#metodologia">Metodología</a>
       <a href="#aplicaciones">Aplicaciones</a>
       <a href="#como">Cómo funciona</a>
-      <a href="#metodologia">Metodología</a>
       <a href="#preguntas">Preguntas</a>
     </nav>
     <a class="btn btn--chico" href="#discovery">Agenda tu Discovery</a>
     <button class="nav__menu" id="nav-menu" aria-expanded="false" aria-controls="menu-movil" aria-label="Abrir el menú"><i></i><i></i></button>
   </div>
   <nav class="menu" id="menu-movil" aria-label="Menú">
+    <a href="#metodologia">Metodología</a>
     <a href="#aplicaciones">Aplicaciones</a>
     <a href="#como">Cómo funciona</a>
-    <a href="#metodologia">Metodología</a>
     <a href="#preguntas">Preguntas</a>
     <a class="btn" href="#discovery">Agenda tu Discovery <svg><use href="#i-flecha"/></svg></a>
   </nav>
@@ -56,10 +56,10 @@
   <!-- 01 · Banner: las cámaras en ciclo, de fondo, con lo que Lumina detecta; encima solo el título -->
   <section class="heroe" id="heroe" aria-labelledby="h-heroe">
     <div class="vivo" id="camaras" aria-hidden="true">
-      <video data-cam="epp" muted loop playsinline preload="auto" poster="recursos/video/epp.jpg?v=4"><source src="recursos/video/epp.mp4?v=4" type="video/mp4"></video>
-      <video data-cam="despacho" muted loop playsinline preload="auto" poster="recursos/video/despacho.jpg?v=4"><source src="recursos/video/despacho.mp4?v=4" type="video/mp4"></video>
-      <video data-cam="zona" muted loop playsinline preload="auto" poster="recursos/video/zona.jpg?v=4"><source src="recursos/video/zona.mp4?v=4" type="video/mp4"></video>
-      <video data-cam="trafico" muted loop playsinline preload="auto" poster="recursos/video/trafico.jpg?v=4"><source src="recursos/video/trafico.mp4?v=4" type="video/mp4"></video>
+      <video data-cam="casco" muted loop playsinline preload="auto" poster="recursos/video/casco.jpg?v=6"><source src="recursos/video/casco.mp4?v=6" type="video/mp4"></video>
+      <video data-cam="despacho" muted loop playsinline preload="auto" poster="recursos/video/despacho.jpg?v=6"><source src="recursos/video/despacho.mp4?v=6" type="video/mp4"></video>
+      <video data-cam="inventario" muted loop playsinline preload="auto" poster="recursos/video/inventario.jpg?v=6"><source src="recursos/video/inventario.mp4?v=6" type="video/mp4"></video>
+      <video data-cam="zona" muted loop playsinline preload="auto" poster="recursos/video/zona.jpg?v=6"><source src="recursos/video/zona.mp4?v=6" type="video/mp4"></video>
       <canvas class="vivo__capa"></canvas>
       <i class="vivo__velo"></i>
     </div>
@@ -73,21 +73,22 @@
     </div>
   </section>
 
-  <!-- 02 · Hoy: un muro de cámaras grabando en gris y los tres problemas; llega la luz de Lumina, las cámaras se encienden y ven -->
+  <!-- 01 · Desafío: cuatro cámaras grabando en gris lo que nadie ve; llega la luz de Lumina, se encienden y marcan cada riesgo -->
   <section class="hoy" id="hoy" aria-labelledby="h-hoy">
     <div class="hoy__fijo">
       <div class="hoy__cab" id="hoy-cab">
-        <span class="tag"><b>01</b>Hoy</span>
-        <h2 class="t" id="h-hoy">Las cámaras registran. <span class="gris">La operación no anticipa.</span></h2>
+        <span class="tag"><b>01</b>Desafío</span>
+        <h2 class="t" id="h-hoy">Tus cámaras lo graban todo. <span class="gris">Pero nadie lo está mirando.</span></h2>
+        <p class="bajada">Lo que pasa en la planta queda grabado y se revisa cuando ya es tarde.</p>
       </div>
       <div class="hoy__muro" id="muro" aria-hidden="true">
-        <div class="cm" data-desde="-1,-.5" data-fuente="epp" style="--x:6%;--y:20%"><canvas></canvas><span class="cm__rec"><i></i>REC · CAM 01</span><span class="cm__hora" data-off="0"></span><span class="cm__lugar">Línea de armado</span></div>
-        <div class="cm" data-desde="1,-.6" data-fuente="despacho" style="--x:calc(94% - var(--w));--y:16%"><canvas></canvas><span class="cm__rec"><i></i>REC · CAM 02</span><span class="cm__hora" data-off="-37"></span><span class="cm__lugar">Zona despacho</span></div>
-        <div class="cm" data-desde="-1,.5" data-fuente="zona" style="--x:3%;--y:58%"><canvas></canvas><span class="cm__rec"><i></i>REC · CAM 03</span><span class="cm__hora" data-off="-81"></span><span class="cm__lugar">Zona de preparación</span></div>
-        <div class="cm" data-desde="1,.5" data-fuente="trafico" style="--x:calc(97% - var(--w));--y:56%"><canvas></canvas><span class="cm__rec"><i></i>REC · CAM 04</span><span class="cm__hora" data-off="-142"></span><span class="cm__lugar">Pasillo central</span></div>
-        <div class="sn" data-desde="-.4,1" style="--x:21%;--y:80%"><b>Operación reactiva</b><span>Los eventos se revisan después de que ocurren.</span></div>
-        <div class="sn" data-desde="0,1" style="--x:calc(50% - var(--ws) / 2);--y:84%"><b>Operación sin alertas</b><span>Las condiciones críticas no activan nada en el piso.</span></div>
-        <div class="sn" data-desde=".4,1" style="--x:calc(79% - var(--ws));--y:80%"><b>Decisiones sin datos</b><span>Cuesta priorizar riesgos sin eventos ni patrones.</span></div>
+        <div class="cm" data-desde="-1,-.5" data-fuente="casco" style="--x:6%;--y:18%"><canvas></canvas><span class="cm__rec"><i></i>REC · CAM 01</span><span class="cm__hora" data-off="0"></span><span class="cm__lugar">Patio de obra</span></div>
+        <div class="cm" data-desde="1,-.6" data-fuente="despacho" style="--x:calc(94% - var(--w));--y:16%"><canvas></canvas><span class="cm__rec"><i></i>REC · CAM 02</span><span class="cm__hora" data-off="-37"></span><span class="cm__lugar">Zona de despacho</span></div>
+        <div class="cm" data-desde="-1,.5" data-fuente="inventario" style="--x:3%;--y:54%"><canvas></canvas><span class="cm__rec"><i></i>REC · CAM 03</span><span class="cm__hora" data-off="-81"></span><span class="cm__lugar">Bodega</span></div>
+        <div class="cm" data-desde="1,.5" data-fuente="zona" style="--x:calc(97% - var(--w));--y:52%"><canvas></canvas><span class="cm__rec"><i></i>REC · CAM 04</span><span class="cm__hora" data-off="-142"></span><span class="cm__lugar">Zona de carga</span></div>
+        <div class="sn" data-desde="-.4,1" style="--x:19%;--y:79%"><b>Alguien trabaja sin casco</b><span class="sn__a">Nadie lo ve hasta que pasa algo.</span><span class="sn__b">Lumina lo detecta y avisa al instante.</span></div>
+        <div class="sn" data-desde="0,1" style="--x:calc(50% - var(--ws) / 2);--y:83%"><b>Una grúa pasa junto a un peatón</b><span class="sn__a">Se descubre días después, en la grabación.</span><span class="sn__b">La baliza se enciende en el momento.</span></div>
+        <div class="sn" data-desde=".4,1" style="--x:calc(81% - var(--ws));--y:79%"><b>Entran a una zona restringida</b><span class="sn__a">En el piso no suena nada.</span><span class="sn__b">Queda registrado con video, hora y lugar.</span></div>
       </div>
       <div class="hoy__fin" id="hoy-fin">
         <div class="hoy__sim"><i class="hoy__halo"></i><i class="hoy__onda"></i><i class="hoy__onda"></i><i class="hoy__onda"></i><img src="recursos/marcas/lumina-isotipo.svg" alt=""></div>
@@ -98,112 +99,31 @@
     </div>
   </section>
 
-  <!-- 03 · Sin Lumina / Con Lumina: una línea al centro baja con el scroll; en cada fila el impulso va primero a «Sin» y luego a «Con» -->
+  <!-- 02 · Beneficios: una cámara normal graba; con Lumina analiza y actúa. Una línea al centro baja con el scroll -->
   <section class="cmp" id="comparativa" aria-labelledby="h-cmp">
     <div class="envoltura">
       <div class="cab">
-        <span class="tag" data-r><b>02</b>Con Lumina</span>
-        <h2 class="t arma" id="h-cmp">Las mismas cámaras. <span class="gris">Otra forma de cuidar tu operación.</span></h2>
-        <p class="bajada" data-r>Convertimos video pasivo en información accionable: detectamos, alertamos, evidenciamos y mejoramos con datos de tu operación.</p>
+        <span class="tag" data-r><b>02</b>Beneficios</span>
+        <h2 class="t arma" id="h-cmp">Las mismas cámaras. <span class="gris">Ahora entienden y actúan.</span></h2>
+        <p class="bajada" data-r>Una cámara normal solo graba. Lumina entiende lo que ve, avisa en el momento y deja la evidencia lista.</p>
       </div>
-      <div class="vs" id="vs" role="table" aria-label="Sin Lumina y con Lumina">
+      <div class="vs" id="vs" role="table" aria-label="Solo cámaras y con Lumina">
         <i class="vs__eje" aria-hidden="true"><i class="vs__llena" id="vs-llena"></i><i class="vs__chispa" id="vs-chispa"></i></i>
-        <div class="vs__cab" role="row"><span class="vs__lado vs__lado--sin" role="columnheader"><i></i>Sin Lumina</span><span role="columnheader"></span><span class="vs__lado vs__lado--con" role="columnheader"><img src="recursos/marcas/lumina-isotipo.svg" alt="">Con Lumina</span></div>
-        <div class="vs__fila" role="row"><div class="vs__sin" role="cell"><i class="vs__x" aria-hidden="true"></i>Se revisa después de que pasa.</div><div class="vs__mid"><i class="vs__rama vs__rama--sin"></i><i class="vs__bala vs__bala--sin"></i><b class="vs__tema" role="cell">Detección</b><i class="vs__rama vs__rama--con"></i><i class="vs__bala vs__bala--con"></i></div><div class="vs__con" role="cell">Se detecta en el momento.</div></div>
-        <div class="vs__fila" role="row"><div class="vs__sin" role="cell"><i class="vs__x" aria-hidden="true"></i>Nadie se entera en el piso.</div><div class="vs__mid"><i class="vs__rama vs__rama--sin"></i><i class="vs__bala vs__bala--sin"></i><b class="vs__tema" role="cell">Respuesta</b><i class="vs__rama vs__rama--con"></i><i class="vs__bala vs__bala--con"></i></div><div class="vs__con" role="cell">Proyector, baliza y aviso al instante.</div></div>
-        <div class="vs__fila" role="row"><div class="vs__sin" role="cell"><i class="vs__x" aria-hidden="true"></i>Horas de video sin ordenar.</div><div class="vs__mid"><i class="vs__rama vs__rama--sin"></i><i class="vs__bala vs__bala--sin"></i><b class="vs__tema" role="cell">Evidencia</b><i class="vs__rama vs__rama--con"></i><i class="vs__bala vs__bala--con"></i></div><div class="vs__con" role="cell">Cada hallazgo con video, hora y lugar.</div></div>
-        <div class="vs__fila" role="row"><div class="vs__sin" role="cell"><i class="vs__x" aria-hidden="true"></i>Se decide por intuición.</div><div class="vs__mid"><i class="vs__rama vs__rama--sin"></i><i class="vs__bala vs__bala--sin"></i><b class="vs__tema" role="cell">Decisiones</b><i class="vs__rama vs__rama--con"></i><i class="vs__bala vs__bala--con"></i></div><div class="vs__con" role="cell">Datos para priorizar riesgos.</div></div>
-        <div class="vs__fila" role="row"><div class="vs__sin" role="cell"><i class="vs__x" aria-hidden="true"></i>Alguien mirando pantallas.</div><div class="vs__mid"><i class="vs__rama vs__rama--sin"></i><i class="vs__bala vs__bala--sin"></i><b class="vs__tema" role="cell">Tu equipo</b><i class="vs__rama vs__rama--con"></i><i class="vs__bala vs__bala--con"></i></div><div class="vs__con" role="cell">El aviso llega a quien está en terreno.</div></div>
-        <div class="vs__fila" role="row"><div class="vs__sin" role="cell"><i class="vs__x" aria-hidden="true"></i>Cámaras que solo graban.</div><div class="vs__mid"><i class="vs__rama vs__rama--sin"></i><i class="vs__bala vs__bala--sin"></i><b class="vs__tema" role="cell">Tus cámaras</b><i class="vs__rama vs__rama--con"></i><i class="vs__bala vs__bala--con"></i></div><div class="vs__con" role="cell">Cámaras que anticipan.</div></div>
+        <div class="vs__cab" role="row"><span class="vs__lado vs__lado--sin" role="columnheader"><i></i>Solo cámaras</span><span role="columnheader"></span><span class="vs__lado vs__lado--con" role="columnheader"><img src="recursos/marcas/lumina-isotipo.svg" alt="">Con Lumina</span></div>
+        <div class="vs__fila" role="row"><div class="vs__sin" role="cell"><i class="vs__x" aria-hidden="true"></i>Te enteras cuando ya pasó.</div><div class="vs__mid"><i class="vs__rama vs__rama--sin"></i><i class="vs__bala vs__bala--sin"></i><b class="vs__tema" role="cell">Respuesta</b><i class="vs__rama vs__rama--con"></i><i class="vs__bala vs__bala--con"></i></div><div class="vs__con" role="cell">Aviso en el momento a quien está en terreno.</div></div>
+        <div class="vs__fila" role="row"><div class="vs__sin" role="cell"><i class="vs__x" aria-hidden="true"></i>Horas de video por revisar.</div><div class="vs__mid"><i class="vs__rama vs__rama--sin"></i><i class="vs__bala vs__bala--sin"></i><b class="vs__tema" role="cell">Evidencia</b><i class="vs__rama vs__rama--con"></i><i class="vs__bala vs__bala--con"></i></div><div class="vs__con" role="cell">Cada evento con su clip, hora y lugar.</div></div>
+        <div class="vs__fila" role="row"><div class="vs__sin" role="cell"><i class="vs__x" aria-hidden="true"></i>Se decide por intuición.</div><div class="vs__mid"><i class="vs__rama vs__rama--sin"></i><i class="vs__bala vs__bala--sin"></i><b class="vs__tema" role="cell">Prevención</b><i class="vs__rama vs__rama--con"></i><i class="vs__bala vs__bala--con"></i></div><div class="vs__con" role="cell">Datos para corregir antes del accidente.</div></div>
+        <div class="vs__fila" role="row"><div class="vs__sin" role="cell"><i class="vs__x" aria-hidden="true"></i>Alguien mirando pantallas.</div><div class="vs__mid"><i class="vs__rama vs__rama--sin"></i><i class="vs__bala vs__bala--sin"></i><b class="vs__tema" role="cell">Tu equipo</b><i class="vs__rama vs__rama--con"></i><i class="vs__bala vs__bala--con"></i></div><div class="vs__con" role="cell">Nadie mira pantallas: Lumina avisa.</div></div>
       </div>
     </div>
   </section>
 
-  <!-- 03 · El recorrido: la planta que se enciende; la luz de Lumina viaja por las seis estaciones -->
-  <section class="como" id="como" aria-labelledby="h-como">
-    <div class="envoltura">
-      <div class="cab2">
-        <div>
-          <span class="tag" data-r><b>03</b>Cómo funciona</span>
-          <h2 class="t arma" id="h-como">Convierte video pasivo <span class="gris">en información accionable.</span></h2>
-        </div>
-        <p class="bajada" data-r>No necesitas observar todo. Necesitas identificar lo que requiere atención.</p>
-      </div>
-      <div class="recorrido" id="recorrido">
-        <div class="recorrido__fijo">
-          <div class="rec">
-            <aside class="rec__panel">
-              <div class="rec__actual" aria-live="polite">
-                <span class="rec__n" id="rec-n">01</span>
-                <h3 class="rec__t" id="rec-t">Operación en tiempo real</h3>
-                <p class="rec__d" id="rec-d">Personas, vehículos y activos en tus instalaciones.</p>
-                <ul class="rec__lectura" id="rec-l"></ul>
-              </div>
-              <div class="estaciones" role="tablist" aria-label="El recorrido de Lumina">
-            <button role="tab" class="estacion activo" aria-selected="true"><i class="estacion__barra"></i><span>01</span><b>Operación en tiempo real</b></button>
-            <button role="tab" class="estacion" aria-selected="false"><i class="estacion__barra"></i><span>02</span><b>Periférico de visión</b></button>
-            <button role="tab" class="estacion" aria-selected="false"><i class="estacion__barra"></i><span>03</span><b>Procesamiento con IA</b></button>
-            <button role="tab" class="estacion" aria-selected="false"><i class="estacion__barra"></i><span>04</span><b>Alerta en terreno</b></button>
-            <button role="tab" class="estacion" aria-selected="false"><i class="estacion__barra"></i><span>05</span><b>Evidencia y datos</b></button>
-            <button role="tab" class="estacion" aria-selected="false"><i class="estacion__barra"></i><span>06</span><b>Tu equipo en terreno</b></button>
-              </div>
-            </aside>
-            <div class="maqueta" id="maqueta">
-              <canvas class="maqueta__lienzo" aria-hidden="true"></canvas>
-              <div class="maqueta__capa" id="etiquetas" aria-hidden="true"></div>
-              <div class="cctv" id="cctv" aria-hidden="true"><canvas></canvas><span class="cctv__rec"><i></i>CAM 01 · EN VIVO</span><span class="cctv__alerta">Riesgo persona–vehículo</span></div>
-              <p class="maqueta__cargando" id="maqueta-cargando">Armando la planta…</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <p class="nota">Maqueta ilustrativa: lugares, nombres y avisos son de ejemplo</p>
-    </div>
-  </section>
-
-  <!-- 04 · Aplicaciones: las cuatro cámaras detectando en vivo, más los eventos críticos -->
-  <section class="apps" id="aplicaciones" aria-labelledby="h-apps">
-    <div class="envoltura">
-      <div class="cab">
-        <span class="tag" data-r><b>04</b>Aplicaciones</span>
-        <h2 class="t arma" id="h-apps">Una misma tecnología. <span class="gris">Diferentes desafíos en terreno.</span></h2>
-        <p class="bajada" data-r>Cada aplicación se define según el entorno, los riesgos y los objetivos de la operación.</p>
-      </div>
-      <div class="apps__grilla">
-        <article class="app" data-r data-cam="epp"><canvas aria-hidden="true"></canvas><div class="app__pie"><small>Seguridad de personas</small><b>Uso de EPP</b><span>Casco, chaleco u otros elementos definidos para cada zona.</span></div></article>
-        <article class="app" data-r style="--d:.06s" data-cam="despacho"><canvas aria-hidden="true"></canvas><div class="app__pie"><small>Interacción crítica</small><b>Persona–vehículo</b><span>Acercamientos entre personas y equipos móviles.</span></div></article>
-        <article class="app" data-r style="--d:.12s" data-cam="zona"><canvas aria-hidden="true"></canvas><div class="app__pie"><small>Control de acceso</small><b>Zonas restringidas</b><span>Ingresos, permanencias o cruces de línea.</span></div></article>
-        <article class="app" data-r style="--d:.18s" data-cam="trafico"><canvas aria-hidden="true"></canvas><div class="app__pie"><small>Tráfico interno</small><b>Equipos móviles</b><span>Rutas, cruces y puntos ciegos de la operación.</span></div></article>
-        <article class="app app--texto" data-r style="--d:.24s"><small>Condiciones críticas</small><b>Eventos críticos</b><span>Humo, amagos de incendio, caídas, obstáculos o condiciones ergonómicas, sujetos a validación técnica.</span></article>
-      </div>
-    </div>
-  </section>
-
-  <!-- El mundo Lumina: la frase gigante a pantalla completa, con lo que Lumina ve flotando a distintas profundidades -->
-  <div class="mundo" id="mundo" role="presentation">
-    <div class="mundo__fijo">
-      <canvas class="luz" data-luz="mundo" aria-hidden="true"></canvas>
-      <div class="mundo__sim" aria-hidden="true"><i></i><i></i><i></i><img src="recursos/marcas/lumina-isotipo.svg" alt=""></div>
-      <div class="mundo__txt"><p class="mundo__l" id="mundo-a">Inteligencia que observa,</p><p class="mundo__l mundo__l--b" id="mundo-b">entiende y actúa.</p></div>
-      <div class="mundo__flota" aria-hidden="true">
-        <i class="mf mf--cam" data-v="-.9" style="--x:8%;--y:20%"><svg><use href="#i-camara"/></svg></i>
-        <i class="mf mf--det" data-v="-1.2" style="--x:78%;--y:16%"><b></b>Persona</i>
-        <i class="mf mf--det mf--n" data-v="-.6" style="--x:84%;--y:70%"><b></b>Montacargas</i>
-        <i class="mf mf--ok" data-v=".5" style="--x:12%;--y:74%"><b></b>Chaleco</i>
-        <i class="mf mf--cam mf--lejos" data-v=".35" style="--x:90%;--y:44%"><svg><use href="#i-baliza"/></svg></i>
-        <i class="mf mf--det mf--r mf--lejos" data-v=".3" style="--x:4%;--y:46%"><b></b>Zona restringida</i>
-        <i class="mf mf--cam" data-v="-1.4" style="--x:60%;--y:86%"><svg><use href="#i-ia"/></svg></i>
-        <i class="mf mf--ok mf--lejos" data-v=".25" style="--x:30%;--y:10%"><b></b>EPP correcto</i>
-      </div>
-    </div>
-  </div>
-
-  <!-- 04 · Metodología: así parte cada proyecto -->
+  <!-- 03 · Metodología: así parte cada proyecto -->
   <section class="metodo" id="metodologia" aria-labelledby="h-metodo">
     <div class="envoltura">
       <div class="cab2">
         <div>
-          <span class="tag" data-r><b>05</b>Metodología</span>
+          <span class="tag" data-r><b>03</b>Metodología</span>
           <h2 class="t arma" id="h-metodo">De la problemática <span class="gris">a un sistema que aprende con la operación.</span></h2>
         </div>
         <p class="bajada" data-r>Cada aplicación se define según el entorno, los riesgos y los objetivos de tu operación.</p>
@@ -228,6 +148,72 @@
       </div>
     </div>
   </section>
+
+  <!-- 04 · Aplicaciones: las cuatro cámaras detectando en vivo, más los eventos críticos -->
+  <section class="apps" id="aplicaciones" aria-labelledby="h-apps">
+    <div class="envoltura">
+      <div class="cab">
+        <span class="tag" data-r><b>04</b>Aplicaciones</span>
+        <h2 class="t arma" id="h-apps">Una misma tecnología. <span class="gris">Diferentes desafíos en terreno.</span></h2>
+        <p class="bajada" data-r>Cada aplicación se define según el entorno, los riesgos y los objetivos de la operación.</p>
+      </div>
+      <div class="apps__grilla">
+        <article class="app" data-r data-px=".05" data-cam="chaleco"><canvas aria-hidden="true"></canvas><div class="app__pie"><small>Seguridad de personas</small><b>Uso de EPP</b><span>Casco, chaleco u otros elementos definidos para cada zona.</span></div></article>
+        <article class="app" data-r data-px="-.05" style="--d:.06s" data-cam="despacho"><canvas aria-hidden="true"></canvas><div class="app__pie"><small>Interacción crítica</small><b>Persona–vehículo</b><span>Acercamientos entre personas y equipos móviles.</span></div></article>
+        <article class="app" data-r data-px=".05" style="--d:.12s" data-cam="zona"><canvas aria-hidden="true"></canvas><div class="app__pie"><small>Control de acceso</small><b>Zonas restringidas</b><span>Ingresos, permanencias o cruces de línea.</span></div></article>
+        <article class="app" data-r data-px="-.05" style="--d:.18s" data-cam="trafico"><canvas aria-hidden="true"></canvas><div class="app__pie"><small>Tráfico interno</small><b>Equipos móviles</b><span>Rutas, cruces y puntos ciegos de la operación.</span></div></article>
+        <article class="app app--texto" data-r data-px=".05" style="--d:.24s"><small>Condiciones críticas</small><b>Eventos críticos</b><span>Humo, amagos de incendio, caídas, obstáculos o condiciones ergonómicas, sujetos a validación técnica.</span></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- El mundo Lumina: la frase gigante a pantalla completa, con lo que Lumina ve flotando a distintas profundidades -->
+  <div class="mundo" id="mundo" role="presentation">
+    <div class="mundo__fijo">
+      <canvas class="luz" data-luz="mundo" aria-hidden="true"></canvas>
+      <div class="mundo__sim" aria-hidden="true"><i></i><i></i><i></i><img src="recursos/marcas/lumina-isotipo.svg" alt=""></div>
+      <div class="mundo__txt"><p class="mundo__l" id="mundo-a">Inteligencia que observa,</p><p class="mundo__l mundo__l--b" id="mundo-b">entiende y actúa.</p></div>
+      <div class="mundo__flota" aria-hidden="true">
+        <i class="mf mf--cam" data-v="-.8" style="--x:8%;--y:11%"><svg><use href="#i-camara"/></svg></i>
+        <i class="mf mf--det mf--r" data-v="-1" style="--x:74%;--y:14%"><b></b>Sin casco</i>
+        <i class="mf mf--ok mf--lejos" data-v=".4" style="--x:36%;--y:7%"><b></b>EPP correcto</i>
+        <i class="mf mf--cam mf--lejos" data-v=".3" style="--x:90%;--y:22%"><svg><use href="#i-baliza"/></svg></i>
+        <i class="mf mf--det mf--n" data-v="-.6" style="--x:78%;--y:80%"><b></b>Montacargas</i>
+        <i class="mf mf--ok" data-v=".6" style="--x:9%;--y:79%"><b></b>Chaleco</i>
+        <i class="mf mf--det mf--r mf--lejos" data-v=".3" style="--x:30%;--y:88%"><b></b>Zona restringida</i>
+        <i class="mf mf--cam" data-v="-1" style="--x:58%;--y:84%"><svg><use href="#i-ia"/></svg></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- 05 · Cómo funciona: la planta en 3D, guiada por el scroll. Arriba, solo la fase en curso; la maqueta cuenta el resto -->
+  <section class="como" id="como" aria-labelledby="h-como">
+    <div class="envoltura">
+      <div class="cab">
+        <span class="tag" data-r><b>05</b>Cómo funciona</span>
+        <h2 class="t arma" id="h-como">De lo que ve la cámara <span class="gris">a tu equipo en terreno.</span></h2>
+      </div>
+    </div>
+    <div class="recorrido" id="recorrido">
+      <div class="recorrido__fijo">
+        <div class="rec">
+          <div class="rec__actual" aria-live="polite">
+            <span class="rec__n" id="rec-n">01</span>
+            <div><h3 class="rec__t" id="rec-t">Lumina detecta algo</h3><p class="rec__d" id="rec-d">Una grúa sale de un punto ciego justo cuando cruza un peatón. La cámara lo ve.</p></div>
+          </div>
+          <div class="rec__segs" aria-hidden="true"><i class="rec__seg activo"></i><i class="rec__seg"></i><i class="rec__seg"></i><i class="rec__seg"></i></div>
+          <div class="maqueta" id="maqueta">
+            <canvas class="maqueta__lienzo" aria-hidden="true"></canvas>
+            <div class="maqueta__capa" id="etiquetas" aria-hidden="true"></div>
+            <div class="cctv" id="cctv" aria-hidden="true"><canvas></canvas><span class="cctv__rec"><i></i>CAM 01 · EN VIVO</span><span class="cctv__alerta">Riesgo persona–vehículo</span></div>
+            <p class="maqueta__cargando" id="maqueta-cargando">Armando la planta…</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="envoltura"><p class="nota">Maqueta ilustrativa: lugares, nombres y avisos son de ejemplo</p></div>
+  </section>
+
 
   <!-- 05 · Preguntas -->
   <section class="fq" id="preguntas" aria-labelledby="h-fq">
@@ -276,6 +262,7 @@
 </footer>
 
 <script src="recursos/video/detecciones.js?v=5"></script>
-<script src="lumina.js?v=19" type="module"></script>
+<script src="recursos/video/epp.js?v=1"></script>
+<script src="lumina.js?v=20" type="module"></script>
 </body>
 </html>
