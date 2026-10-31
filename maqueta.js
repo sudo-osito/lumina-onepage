@@ -209,7 +209,7 @@ const marco = (w, h, d) => { const m = new THREE.LineSegments(new THREE.EdgesGeo
 const marcos = [...gente.map(() => marco(.62, 1.62, .62)), marco(2.5, 2.4, 1.3), marco(1.2, 1.1, .7)];
 
 /* ── Pantallas flotantes: lo que ve la cámara y la ficha del hallazgo ── */
-const video = Object.assign(document.createElement("video"), { muted: true, loop: true, playsInline: true, preload: "auto", src: "recursos/video/despacho.mp4?v=5" });
+const video = L.videoEn(cont, "recursos/video/despacho.mp4?v=6", "recursos/video/despacho.jpg?v=6");   // en la página, bajo el lienzo: Safari del iPhone no reproduce videos sueltos
 function panel(ancho, alto, px, py) {
   const cv = Object.assign(document.createElement("canvas"), { width: px, height: py }), tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
   const m = new THREE.Mesh(new THREE.PlaneGeometry(ancho, alto), new THREE.MeshBasicMaterial({ map: tex, transparent: true, toneMapped: false, depthWrite: false }));
@@ -278,7 +278,7 @@ lienzo.addEventListener("pointerdown", (e) => { arrastre = { x: e.clientX, g: gi
 lienzo.addEventListener("pointermove", (e) => { if (arrastre) giro = clamp(arrastre.g + (e.clientX - arrastre.x) / 900, -.25, .25); });
 lienzo.addEventListener("pointerup", () => (arrastre = null));
 function encuadrar(w, h) {
-  const asp = w / h, mitad = asp >= 1.3 ? toma.t : toma.t * Math.max(1, 1.05 / asp * (asp < .8 ? .9 : 1));
+  const asp = w / h, mitad = asp >= 1.3 ? toma.t : toma.t * Math.max(1, asp < .8 ? .74 / asp : 1.05 / asp);   // vertical (celular): más cerca de la acción
   camara.left = -mitad * asp; camara.right = mitad * asp; camara.top = mitad; camara.bottom = -mitad; camara.updateProjectionMatrix();
   camara.position.copy(toma.c).addScaledVector(DIR.clone().applyAxisAngle(Y, giro + toma.g), 50); camara.lookAt(toma.c);
 }
@@ -470,7 +470,7 @@ let raf = 0;
 const bucle = () => { if (!visible) return; raf = requestAnimationFrame(bucle); cuadro(); };
 new IntersectionObserver(([en]) => {
   visible = en.isIntersecting;
-  if (visible) { previo = performance.now(); video.play().catch(() => {}); cancelAnimationFrame(raf); raf = requestAnimationFrame(bucle); } else video.pause();
+  if (visible) { previo = performance.now(); L.reproducir(video); cancelAnimationFrame(raf); raf = requestAnimationFrame(bucle); } else L.pausar(video);
 }, { threshold: 0 }).observe(cont);
 cuadro();
 cont.classList.add("lista"); document.getElementById("maqueta-cargando")?.remove();

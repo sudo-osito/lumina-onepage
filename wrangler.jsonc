@@ -1,6 +1,8 @@
-// Cloudflare Workers · one-page estática (web-lumina)
+// Cloudflare Workers · one-page estática (web-lumina) en lumina.optimizo.ai
+// Los videos pasan por src/index.js para responder por tramos (Safari del iPhone lo exige).
 {
   "name": "web-lumina",
+  "main": "src/index.js",
   "compatibility_date": "2026-10-01",
-  "assets": { "directory": "./" }
+  "assets": { "directory": "./", "binding": "ASSETS", "run_worker_first": ["/recursos/video/*"] }
 }

@@ -29,6 +29,18 @@ function bucleVisible(el, cuadro, fps = 60) {
   alVer(el, () => { if (!vivo) { vivo = true; raf = requestAnimationFrame(paso); } }, () => { vivo = false; cancelAnimationFrame(raf); }, 0);
   if (QUIETO) requestAnimationFrame(() => cuadro());
 }
+/* ── Videos: siempre dentro de la página, bajo su lienzo (Safari del iPhone no reproduce un video suelto, fuera del documento).
+   Si el celular bloquea la reproducción automática (modo de bajo consumo), se reintenta con el primer toque ── */
+const QUIEREN = new Set();
+function videoEn(cont, src, poster) {
+  const v = Object.assign(document.createElement("video"), { muted: true, loop: true, playsInline: true, preload: "none", poster, className: "fuente" });
+  v.setAttribute("muted", ""); v.setAttribute("playsinline", ""); v.setAttribute("aria-hidden", "true"); v.src = src;
+  cont.prepend(v); return v;
+}
+const reproducir = (v) => { QUIEREN.add(v); if (v.preload !== "auto") v.preload = "auto"; v.play().catch(() => {}); };
+const pausar = (v) => { QUIEREN.delete(v); v.pause(); };
+const corre = (v) => v.readyState >= 2 && !v.paused;
+["touchend", "click", "keydown"].forEach((ev) => addEventListener(ev, () => QUIEREN.forEach((v) => v.paused && v.play().catch(() => {})), { passive: true }));
 function lienzo(cv) {
   const dpr = Math.min(2, devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight;
   if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
@@ -275,7 +287,8 @@ const CAMARAS = {
 };
 
 // la tarjeta de alerta del banner: qué pasó, dónde, y que el aviso ya salió
-function avisar(c, w, h, a, hud, s) {
+function avisar(c, w, h, a, hud, s, piso) {
+  if (w < 700) return avisarCorto(c, w, a, hud, s, piso);
   const e = clamp(w / 1300, .78, 1.15), k = eo(clamp(s / .5)), k2 = eo(clamp((s - 1.1) / .45)), ancho = Math.min(330 * e, w - 32), alto = (a.detalle ? 112 : 92) * e + 40 * e * k2;
   const x = w - ancho - (w < 700 ? 16 : 32 * e) + (1 - k) * 30, y = (w < 700 ? 78 : 96 * e);
   c.save(); c.globalAlpha = k;
@@ -296,19 +309,37 @@ function avisar(c, w, h, a, hud, s) {
   }
   c.restore();
 }
+// en el celular: una tarjeta corta justo sobre el título, para no tapar a las personas del video
+function avisarCorto(c, w, a, hud, s, piso) {
+  const k = eo(clamp(s / .5)), k2 = eo(clamp((s - 1.1) / .45)), x = 16, ancho = w - 32, alto = 58, y = piso - alto - 22 + (1 - k) * 12;
+  c.save(); c.globalAlpha = k;
+  c.shadowColor = "rgba(0,0,0,.4)"; c.shadowBlur = 30; c.shadowOffsetY = 10; c.fillStyle = "rgba(18,20,22,.9)"; rr(c, x, y, ancho, alto, 16); c.fill(); c.shadowColor = "transparent";
+  c.strokeStyle = "rgba(255,255,255,.1)"; c.lineWidth = 1; rr(c, x + .5, y + .5, ancho - 1, alto - 1, 16); c.stroke();
+  const pulso = .5 + .5 * Math.sin(s * 6); c.fillStyle = `rgba(229,72,77,${.25 * pulso})`; c.beginPath(); c.arc(x + 22, y + 21, 9, 0, 7); c.fill();
+  c.fillStyle = ROJO; c.beginPath(); c.arc(x + 22, y + 21, 4.5, 0, 7); c.fill();
+  c.textBaseline = "middle"; c.font = LETRA(15); c.fillStyle = "#fff"; c.fillText(a.evento, x + 38, y + 21.5);
+  c.font = `500 12px -apple-system, "SF Pro Text", Inter, system-ui, sans-serif`; c.fillStyle = "rgba(255,255,255,.6)"; c.fillText(hud, x + 38, y + 40);
+  if (k2 > 0) {
+    c.globalAlpha = k * k2; c.font = LETRA(12); const txt = "Aviso enviado", tw = c.measureText(txt).width, bx = x + ancho - tw - 40, by = y + 40;
+    c.fillStyle = VERDE; c.beginPath(); c.arc(bx + 6, by, 6, 0, 7); c.fill();
+    c.strokeStyle = "#0B131B"; c.lineWidth = 1.8; c.lineCap = "round"; c.beginPath(); c.moveTo(bx + 3.3, by); c.lineTo(bx + 5.4, by + 2.2); c.lineTo(bx + 9, by - 2.2); c.stroke();
+    c.fillStyle = "#B7F5CF"; c.fillText(txt, bx + 18, by + .5);
+  }
+  c.restore();
+}
 
 /* ── Banner: las cuatro cámaras en ciclo, de fondo, con lo que Lumina detecta en cada una ── */
 {
-  const vivo = $("#camaras"), capa = $(".vivo__capa", vivo), videos = $$("video", vivo);
+  const vivo = $("#camaras"), capa = $(".vivo__capa", vivo), videos = $$("video", vivo), eti = $(".heroe .eti");
   const DUR = 6000;
   let i = 0, t0 = performance.now(), visible = false, foco = .5, aviso = null;
   const ir = (k) => {
     i = k; t0 = performance.now(); aviso = null; foco = CAMARAS[videos[k].dataset.cam].foco;
-    videos.forEach((v, j) => { v.classList.toggle("on", j === k); if (j === k) { v.currentTime = 0; if (visible) v.play().catch(() => {}); } else v.pause(); });
+    videos.forEach((v, j) => { v.classList.toggle("on", j === k); if (j === k) { v.currentTime = 0; if (visible) reproducir(v); } else pausar(v); });
   };
   videos.forEach((v) => (v.style.objectPosition = `${CAMARAS[v.dataset.cam].foco * 100}% 50%`));
   ir(0); window.LUMINA_BANNER = ir;   // para revisar: LUMINA_BANNER(n)
-  alVer(vivo, () => { visible = true; videos[i].play().catch(() => {}); }, () => { visible = false; videos.forEach((v) => v.pause()); }, 0);
+  alVer(vivo, () => { visible = true; reproducir(videos[i]); }, () => { visible = false; videos.forEach(pausar); }, 0);
   bucleVisible(vivo, () => {
     const v = videos[i], { c, w, h } = lienzo(capa);
     const cam = CAMARAS[v.dataset.cam];
@@ -328,7 +359,7 @@ function avisar(c, w, h, a, hud, s) {
       // el aviso: lo que Lumina hace con lo que vio (aparece cuando el haz ya pasó)
       if (lee.evento && kEsc > .85 && !aviso) aviso = { t: performance.now(), ...lee };
     }
-    if (aviso) avisar(c, w, h, aviso, cam.hud, (performance.now() - aviso.t) / 1000);
+    if (aviso) avisar(c, w, h, aviso, cam.hud, (performance.now() - aviso.t) / 1000, eti.getBoundingClientRect().top - capa.getBoundingClientRect().top);
     if (kEsc < 1) {
       const g = c.createLinearGradient(xs - 160, 0, xs + 4, 0); g.addColorStop(0, "rgba(236,109,39,0)"); g.addColorStop(1, "rgba(236,109,39,.32)");
       c.fillStyle = g; c.fillRect(xs - 160, 0, 164, h);
@@ -341,10 +372,10 @@ function avisar(c, w, h, a, hud, s) {
 }
 
 /* ── El recorrido: la maqueta 3D se carga recién cuando la sección se acerca (Three.js pesa) ── */
-window.LUMINA = { cajas, dibujarCajas, dibujarRiesgo, mapa, hora };
+window.LUMINA = { cajas, dibujarCajas, dibujarRiesgo, mapa, hora, videoEn, reproducir, pausar };
 {
   const m = $("#maqueta");
-  const io3d = new IntersectionObserver(([e]) => { if (!e.isIntersecting) return; io3d.disconnect(); import("./maqueta.js?v=20").catch((err) => { console.error(err); $("#maqueta-cargando").textContent = "No se pudo cargar la maqueta."; }); }, { rootMargin: "120% 0px" });
+  const io3d = new IntersectionObserver(([e]) => { if (!e.isIntersecting) return; io3d.disconnect(); import("./maqueta.js?v=21").catch((err) => { console.error(err); $("#maqueta-cargando").textContent = "No se pudo cargar la maqueta."; }); }, { rootMargin: "120% 0px" });
   io3d.observe(m);
 }
 
@@ -419,12 +450,11 @@ let pintarPila = () => {};
   };
   // fondo de cada tarjeta: su video, a todo el panel
   $$("canvas[data-escena]").forEach((cv) => {
-    const tipo = cv.dataset.escena, v = Object.assign(document.createElement("video"), { muted: true, loop: true, playsInline: true, preload: "none", src: `recursos/video/metodo/${tipo}.mp4?v=2`, poster: `recursos/video/metodo/${tipo}.jpg` });
+    const tipo = cv.dataset.escena, v = videoEn(cv.parentElement, `recursos/video/metodo/${tipo}.mp4?v=2`, `recursos/video/metodo/${tipo}.jpg`);
     let t0 = performance.now();
-    alVer(cv, () => { t0 = performance.now(); v.preload = "auto"; v.play().catch(() => {}); }, () => v.pause(), 0);
+    alVer(cv, () => { t0 = performance.now(); reproducir(v); }, () => pausar(v), 0);
     bucleVisible(cv, () => {
       const { c, w, h } = lienzo(cv);
-      if (v.readyState >= 2) { const s = Math.max(w / v.videoWidth, h / v.videoHeight); c.drawImage(v, (w - v.videoWidth * s) / 2, (h - v.videoHeight * s) / 2, v.videoWidth * s, v.videoHeight * s); }
       const g = c.createLinearGradient(0, h * .45, 0, h); g.addColorStop(0, "rgba(7,9,11,0)"); g.addColorStop(1, "rgba(7,9,11,.35)"); c.fillStyle = g; c.fillRect(0, 0, w, h);
       ESCENAS[tipo](c, w, h, QUIETO ? 99 : (performance.now() - t0) / 1000);
     }, 30);
@@ -437,8 +467,8 @@ let pintarHoy = () => {};
   const sec = $("#hoy"), cab = $("#hoy-cab"), fin = $("#hoy-fin"), barra = $("#hoy-barra"), piezas = $$("#muro .cm, #muro .sn"), cams = $$("#muro .cm"), sints = $$("#muro .sn");
   // cada cámara es su video real: en gris mientras solo graba; con la luz de Lumina toma color y muestra lo que detecta
   const vids = {};
-  cams.forEach((el) => { const n = el.dataset.fuente; vids[n] = Object.assign(document.createElement("video"), { muted: true, loop: true, playsInline: true, preload: "none", src: `recursos/video/${n}.mp4?v=6`, poster: `recursos/video/${n}.jpg?v=6` }); });
-  alVer(sec, () => Object.values(vids).forEach((v) => { v.preload = "auto"; v.play().catch(() => {}); }), () => Object.values(vids).forEach((v) => v.pause()), 0);
+  cams.forEach((el) => { const n = el.dataset.fuente; vids[n] = videoEn(el, `recursos/video/${n}.mp4?v=6`, `recursos/video/${n}.jpg?v=6`); });
+  alVer(sec, () => Object.values(vids).forEach(reproducir), () => Object.values(vids).forEach(pausar), 0);
   const fase = (p, a, b) => clamp((p - a) / (b - a));
   let ultimoReloj = 0;
   pintarHoy = () => {
@@ -468,11 +498,12 @@ let pintarHoy = () => {};
   // las cámaras se dibujan solas mientras la escena está en pantalla
   bucleVisible(sec, () => {
     cams.forEach((el) => {
-      const cv = $("canvas", el), n = el.dataset.fuente, v = vids[n]; if (!cv.offsetWidth || v.readyState < 2) return;
-      const { c, w, h } = lienzo(cv), k = el._k || 0, s = Math.max(w / v.videoWidth, h / v.videoHeight), iw = v.videoWidth * s, ih = v.videoHeight * s, ox = (w - iw) / 2, oy = (h - ih) / 2;
-      c.drawImage(v, ox, oy, iw, ih);
-      if (k < 1) { c.save(); c.globalCompositeOperation = "saturation"; c.globalAlpha = 1 - k; c.fillStyle = "#808080"; c.fillRect(0, 0, w, h); c.restore(); c.fillStyle = `rgba(20,22,24,${.32 * (1 - k)})`; c.fillRect(0, 0, w, h); }
-      if (k > .05) { c.save(); c.globalAlpha = k; CAMARAS[n].dibujar(c, { X: (q) => ox + q * iw, Y: (q) => oy + q * ih }, v.currentTime, clamp(w / 380, .6, .86)); c.restore(); }
+      const cv = $("canvas", el), n = el.dataset.fuente, v = vids[n], k = el._k || 0; if (!cv.offsetWidth) return;
+      // gris mientras solo graba: el filtro va en el video mismo; el lienzo encima solo lleva lo que Lumina ve
+      const kk = Math.round(k * 50) / 50; if (v._k !== kk) { v._k = kk; v.style.filter = kk >= 1 ? "" : `grayscale(${1 - kk}) brightness(${1 - .32 * (1 - kk)})`; }
+      const { c, w, h } = lienzo(cv); if (!corre(v) || k <= .05) return;
+      const s = Math.max(w / v.videoWidth, h / v.videoHeight), iw = v.videoWidth * s, ih = v.videoHeight * s, ox = (w - iw) / 2, oy = (h - ih) / 2;
+      c.save(); c.globalAlpha = k; CAMARAS[n].dibujar(c, { X: (q) => ox + q * iw, Y: (q) => oy + q * ih }, v.currentTime, clamp(w / 380, .6, .86)); c.restore();
     });
   }, 30);
 }
@@ -491,12 +522,13 @@ let pintarVs = () => {};
 
 /* ── 04 · Aplicaciones: cada tarjeta, su cámara detectando en vivo ── */
 $$(".app[data-cam]").forEach((el) => {
-  const cam = el.dataset.cam, cv = $("canvas", el), v = Object.assign(document.createElement("video"), { muted: true, loop: true, playsInline: true, preload: "none", src: `recursos/video/${cam}.mp4?v=6`, poster: `recursos/video/${cam}.jpg?v=6` });
-  alVer(el, () => { v.preload = "auto"; v.play().catch(() => {}); }, () => v.pause(), 0);
+  const cam = el.dataset.cam, cv = $("canvas", el), v = videoEn(el, `recursos/video/${cam}.mp4?v=6`, `recursos/video/${cam}.jpg?v=6`);
+  alVer(el, () => reproducir(v), () => pausar(v), 0);
   bucleVisible(el, () => {
-    const { c, w, h } = lienzo(cv);
-    if (v.readyState >= 2) { const s = Math.max(w / v.videoWidth, h / v.videoHeight); c.drawImage(v, (w - v.videoWidth * s) / 2, (h - v.videoHeight * s) / 2, v.videoWidth * s, v.videoHeight * s); }
-    CAMARAS[cam].dibujar(c, mapa(w, h), v.currentTime, clamp(w / 900, .65, 1));
+    const { c, w, h } = lienzo(cv), foco = w / h < 1.6 ? CAMARAS[cam].foco : .5;   // tarjeta angosta (celular): el encuadre va hacia lo detectado
+    if (v._foco !== foco) { v._foco = foco; v.style.objectPosition = `${foco * 100}% 50%`; }
+    // las detecciones solo sobre el video corriendo: sobre el póster no calzarían
+    if (corre(v)) CAMARAS[cam].dibujar(c, mapa(w, h, foco), v.currentTime, clamp(w / 900, .65, 1));
   }, 30);
 });
 
@@ -524,6 +556,7 @@ if (!QUIETO) {
       vivo.style.translate = `0 ${y * .45}px`; vivo.style.scale = String(1 + Math.min(y / vh, 1) * .08);
       txt.style.translate = `0 ${-y * .18}px`; txt.style.opacity = String(clamp(1 - y / (vh * .75)));
     }
+    if (MOVIL()) return;   // en una columna las tarjetas se pisarían
     capas.forEach((el) => {
       // se mide contra su contenedor: así una columna entera se mueve junta y las tarjetas nunca se pisan
       const r = el.parentElement.getBoundingClientRect(); if (r.top > vh * 1.5 || r.bottom < -vh * .5) return;
@@ -563,11 +596,14 @@ const tramo = $("#recorrido");
   addEventListener("touchmove", (e) => suave.bloqueado && e.preventDefault(), { passive: false });
   addEventListener("keydown", (e) => { if (suave.bloqueado && [" ", "PageDown", "PageUp", "ArrowDown", "ArrowUp", "End", "Home"].includes(e.key)) e.preventDefault(); });
   addEventListener("scroll", () => { if (!suave.activo) suave.y = suave.meta = scrollY; }, { passive: true });
-  // los enlaces internos viajan suave y no se detienen en la frase
+  // los enlaces internos viajan suave y no se detienen en la frase.
+  // En el celular: desde el menú se salta directo (la hoja del menú tapa el salto y al cerrarse ya estás ahí); el resto, scroll suave nativo
   $$('a[href^="#"]').forEach((a) => a.addEventListener("click", (e) => {
-    const t = a.getAttribute("href") === "#inicio" ? document.body : $(a.getAttribute("href")); if (!t || QUIETO) return;
-    e.preventDefault(); suave.viaje = true; suave.y = scrollY;
-    suave.meta = clamp(t.getBoundingClientRect().top + scrollY - (t === document.body ? 0 : 64), 0, document.documentElement.scrollHeight - innerHeight);
+    const t = a.getAttribute("href") === "#inicio" ? document.body : $(a.getAttribute("href")); if (!t) return;
+    e.preventDefault();
+    const y = clamp(t.getBoundingClientRect().top + scrollY - (t === document.body ? 0 : nav.offsetHeight), 0, document.documentElement.scrollHeight - innerHeight);
+    if (!fino || QUIETO) { scrollTo({ top: y, behavior: a.closest("#menu-movil") || QUIETO ? "instant" : "smooth" }); return; }
+    suave.viaje = true; suave.y = scrollY; suave.meta = y;
     if (!suave.activo) { suave.activo = true; requestAnimationFrame(paso); }
   }));
 }
@@ -576,9 +612,12 @@ function irA(y) { suave.activo = false; suave.y = suave.meta = y; scrollTo(0, y)
 /* ── Menú del celular y progreso de lectura ── */
 {
   const boton = $("#nav-menu"), menu = $("#menu-movil");
-  const cerrar = () => { nav.classList.remove("abierto"); boton.setAttribute("aria-expanded", false); boton.setAttribute("aria-label", "Abrir el menú"); };
-  boton.addEventListener("click", () => { const ab = nav.classList.toggle("abierto"); boton.setAttribute("aria-expanded", ab); boton.setAttribute("aria-label", ab ? "Cerrar el menú" : "Abrir el menú"); });
-  $$("a", menu).forEach((a) => a.addEventListener("click", cerrar));
+  const marcar = (ab) => { nav.classList.toggle("abierto", ab); document.documentElement.classList.toggle("sin-scroll", ab); boton.setAttribute("aria-expanded", ab); boton.setAttribute("aria-label", ab ? "Cerrar el menú" : "Abrir el menú"); };
+  const cerrar = () => marcar(false);
+  boton.addEventListener("click", () => marcar(!nav.classList.contains("abierto")));
+  // el salto ya ocurrió (lo hace el manejador de enlaces): el menú se cierra en el cuadro siguiente
+  $$("a", menu).forEach((a) => a.addEventListener("click", () => requestAnimationFrame(cerrar)));
+  addEventListener("resize", () => innerWidth >= 1020 && cerrar());
   addEventListener("keydown", (e) => e.key === "Escape" && cerrar());
 }
 const progreso = $("#progreso");

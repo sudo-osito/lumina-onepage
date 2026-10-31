@@ -311,7 +311,8 @@ section[id] { scroll-margin-top: 72px; }
 .app { position: relative; grid-column: span 3; aspect-ratio: 16 / 9.6; border-radius: 26px; overflow: hidden; background: #1A1F23; box-shadow: 0 40px 80px -50px rgba(11, 19, 27, .55); }
 .app:nth-child(3), .app:nth-child(4) { grid-column: span 3; }
 .app canvas { position: absolute; inset: 0; width: 100%; height: 100%; transition: transform 1.2s var(--llegada); }
-.app:hover canvas { transform: scale(1.03); }
+.app:hover canvas, .app:hover .fuente { transform: scale(1.03); }
+.app .fuente { transition: transform 1.2s var(--llegada); }
 .app__pie { position: absolute; left: 0; right: 0; bottom: 0; display: grid; gap: 3px; padding: 46px 24px 20px; background: linear-gradient(to top, rgba(7, 9, 11, .78), rgba(7, 9, 11, 0)); color: #fff; }
 .app small, .app--texto small { font-size: 11.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--lumina-claro); }
 .app b { font-size: clamp(1.3rem, 1rem + .9vw, 1.9rem); font-weight: 600; letter-spacing: -.04em; line-height: 1.1; }
@@ -432,4 +433,77 @@ section[id] { scroll-margin-top: 72px; }
 @media (max-width: 1020px) {
   .cm__hora { display: none; }
   .mf { left: min(var(--x), calc(100% - 150px)); }
+}
+
+/* ═══ v13 · celular de verdad: videos dentro de la página, menú a pantalla completa, todo con más aire ═══ */
+/* el video vive bajo su lienzo (Safari del iPhone no reproduce videos sueltos); el lienzo encima solo dibuja lo que Lumina ve */
+.fuente { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+.menu__n { display: none; }
+@media (max-width: 1020px) {
+  .envoltura { width: min(var(--ancho), 100% - 48px); }
+  /* menú: una hoja blanca bajo la barra, con las secciones grandes y separadas, y el CTA abajo */
+  .nav__in { height: 60px; }
+  .nav__menu { width: 44px; height: 44px; margin-right: -8px; }
+  .nav__menu i { left: 12px; right: 12px; } .nav__menu i:first-child { top: 18px; } .nav__menu i:last-child { top: 25px; }
+  .menu { position: absolute; left: 0; right: 0; top: 100%; height: calc(100dvh - 60px); max-height: none; display: flex; flex-direction: column; padding: 12px 24px calc(24px + env(safe-area-inset-bottom)); background: #fff; overflow-y: auto; opacity: 0; visibility: hidden; transform: translateY(-8px); transition: opacity .35s var(--llegada), transform .5s var(--llegada), visibility 0s .5s; }
+  .nav.abierto .menu { max-height: none; padding: 12px 24px calc(24px + env(safe-area-inset-bottom)); opacity: 1; visibility: visible; transform: none; transition: opacity .35s var(--llegada), transform .5s var(--llegada); }
+  .nav.abierto { background: #fff; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .menu a:not(.btn) { display: flex; align-items: baseline; gap: 16px; padding: 18px 0; font-size: 26px; font-weight: 600; letter-spacing: -.04em; line-height: 1.1; border-bottom: 1px solid var(--linea); opacity: 0; transform: translateY(10px); transition: opacity .4s, transform .6s var(--llegada); }
+  .menu__n { display: inline; width: 26px; flex: none; font-size: 13px; font-weight: 600; letter-spacing: 0; color: var(--lumina); font-variant-numeric: tabular-nums; }
+  .nav.abierto .menu a:not(.btn) { opacity: 1; transform: none; transition-delay: calc(.04s + var(--i, 0) * .04s); }
+  .menu .btn { margin-top: auto; height: 58px; font-size: 16.5px; flex: none; }
+  .menu a:nth-child(6) { margin-bottom: 28px; }
+  html.sin-scroll, html.sin-scroll body { overflow: hidden; }
+  .progreso { display: none; }
+  section[id] { scroll-margin-top: 60px; }
+  .recorrido__fijo { top: 60px; height: calc(100svh - 60px); }
+
+  /* banner: el título abajo con aire; el video (y sus detecciones) se ven arriba */
+  .heroe { padding: 100px 0 40px; }
+  .heroe__t { font-size: clamp(2.6rem, 11.4vw, 3.6rem); margin-top: 18px; }
+  .heroe__pie { margin-top: 24px; padding-top: 22px; gap: 22px; }
+
+  /* Desafío: título arriba, las cuatro cámaras en grilla de 2 × 2 y los tres problemas debajo */
+  .hoy { height: 360vh; }
+  .hoy__fijo { height: 100svh; display: flex; flex-direction: column; justify-content: center; gap: 18px; padding: 72px 24px 34px; }
+  .hoy__cab { position: relative; left: auto; top: auto; width: auto; gap: 12px; transform: translateY(var(--sube, 0px)); }
+  .hoy__cab .t { font-size: clamp(1.8rem, 7.8vw, 2.5rem); }
+  .hoy__cab .bajada { display: none; }
+  .hoy__muro { position: relative; inset: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .hoy__muro .cm, .hoy__muro .sn { position: relative; left: auto !important; top: auto !important; }
+  .hoy__muro .cm { width: auto; border-radius: 12px; }
+  .cm span { font-size: 9px; } .cm__rec { top: 7px; left: 8px; } .cm__lugar { bottom: 7px; left: 8px; font-size: 11px !important; }
+  .hoy__muro .sn { display: grid; grid-column: 1 / -1; width: auto; gap: 2px; padding: 9px 14px; border-radius: 14px; }
+  .hoy__muro .sn:nth-of-type(5) { margin-top: 4px; }
+  .sn b { font-size: 14.5px; } .sn span { font-size: 12.5px; }
+  .hoy__barra { bottom: 16px; }
+  .hoy__frase { font-size: clamp(1.7rem, 7.6vw, 2.4rem); }
+
+  /* Metodología: la escena arriba con su alto fijo y el texto siempre a la vista */
+  .carta { grid-template-rows: auto minmax(0, 1fr); height: calc(100svh - 96px); top: calc(72px + var(--i) * 6px); }
+  .carta__esc { order: 0; margin: 0 10px 10px; }
+  .carta__txt { padding: 20px 22px 16px; }
+  .carta h3 { margin-top: 4px; font-size: 2.1rem; }
+  .carta p { margin-top: 8px; }
+
+  /* Aplicaciones: sin parallax (en una columna las tarjetas se pisaban) y más altas, para que el texto no tape lo detectado */
+  [data-px] { translate: none; }
+  .apps__grilla { gap: 14px; }
+  .app { aspect-ratio: 4 / 3.6; border-radius: 22px; }
+  .app__pie { padding: 54px 20px 18px; }
+  .app b { font-size: 1.45rem; }
+  .app__pie span { font-size: 14px; }
+
+  /* el mundo: la frase en cuatro líneas grandes en vez de dos chicas */
+  .mundo__l { font-size: 12.4vw; white-space: normal; max-width: 9.5ch; margin-inline: auto; line-height: .98; }
+  .mundo__txt { display: grid; gap: .1em; }
+  .mf:nth-child(8) { display: none; }
+
+  /* recorrido: la vista de la cámara abajo a la izquierda, lejos de las etiquetas */
+  .cctv { top: auto; bottom: 14px; left: 14px; right: auto; width: 54%; }
+  .rec__actual { padding: 14px 0 10px; }
+}
+@media (max-width: 1020px) and (max-height: 700px) {
+  .hoy__muro .sn span { display: none; }
+  .hoy__fijo { gap: 12px; }
 }
