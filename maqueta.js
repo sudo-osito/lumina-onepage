@@ -72,7 +72,8 @@ caja(.2, 2, 11.6, -8.4, PISO, 0, mat.yeso);                       // muro izquie
 const marcaPiso = (w, d, x, z) => caja(w, .012, d, x, PISO, z, mat.marca, escena, false);
 marcaPiso(10.4, .06, -2.2, -3.32); marcaPiso(10.4, .06, -2.2, -2.08);
 marcaPiso(15.6, .06, .2, .35); marcaPiso(15.6, .06, .2, 2.05);
-for (let i = 0; i < 6; i++) marcaPiso(.2, 7.6, .02 + i * .34, .8);
+for (let i = 0; i < 4; i++) marcaPiso(1.3, .16, 1.15, -3.08 + i * .3);    // cruce del pasillo de la grúa: franjas atravesadas al camino del peatón
+for (let i = 0; i < 5; i++) marcaPiso(1.3, .16, 1.15, .55 + i * .34);
 // racks con pallets y cajas
 function rack(x0, z, largo, prof = .95) {
   const g = new THREE.Group(); escena.add(g);
@@ -198,7 +199,7 @@ const lienzoAviso = Object.assign(document.createElement("canvas"), { width: 512
 }
 const texAviso = new THREE.CanvasTexture(lienzoAviso); texAviso.colorSpace = THREE.SRGBColorSpace;
 const aviso = new THREE.Mesh(new THREE.PlaneGeometry(1.9, 1.9), new THREE.MeshBasicMaterial({ map: texAviso, transparent: true, opacity: 0, depthWrite: false, toneMapped: false }));
-aviso.rotation.x = -Math.PI / 2; aviso.position.set(.7, PISO + .015, -1.1); escena.add(aviso);
+aviso.rotation.x = -Math.PI / 2; aviso.position.set(1.15, PISO + .015, -2.7); aviso.scale.setScalar(.72); escena.add(aviso);   // la advertencia, en el cruce del pasillo
 const haz = new THREE.Mesh(conoGeo, conoMat()); escena.add(haz); haz.material.uniforms.uColor.value.set(0xff7a3a);
 const anillo = new THREE.Mesh(new THREE.RingGeometry(.8, .92, 64), new THREE.MeshBasicMaterial({ color: NARANJO, transparent: true, opacity: 0, depthWrite: false, toneMapped: false }));
 anillo.rotation.x = -Math.PI / 2; escena.add(anillo);
@@ -238,7 +239,7 @@ tagGrua.style.setProperty("--c", "#EC6D27");
 const proy = new THREE.Vector3();
 function aPantalla(v, el, w, h, margen = 0) { proy.copy(v).project(camara); let x = (proy.x * .5 + .5) * w; const y = (-proy.y * .5 + .5) * h; if (margen) x = Math.min(x, w - margen); el.style.setProperty("--x", x.toFixed(1) + "px"); el.style.setProperty("--y", y.toFixed(1) + "px"); return x > -40 && x < w + 40 && y > -40 && y < h + 40; }
 const mostrar = (el, on, v, w, h) => { el.classList.toggle("on", on); if (on) aPantalla(v, el, w, h); };
-const LUGAR = new THREE.Vector3(1.25, PISO, -.55);   // donde el jefe llega a revisar
+const LUGAR = new THREE.Vector3(.15, PISO, -1.75);   // donde el jefe llega a revisar
 
 /* ── La cámara de la maqueta: cada estación su toma; arrastrar la inclina ── */
 const DIR = new THREE.Vector3(.78, .95, 1).normalize(), Y = new THREE.Vector3(0, 1, 0);
@@ -266,17 +267,17 @@ chips.forEach((b, i) => b.addEventListener("click", () => {
 // la historia del cruce, segundo a segundo (todo depende de T: el scroll hacia atrás la rebobina)
 function gruaX(t) {
   if (t < TA - 2.6) return lerp(-7.2, -3.2, t / (TA - 2.6));
-  if (t < TA) return lerp(-3.2, -.95, tramo(t, TA - 2.6, TA));
-  if (t < TA + .7) return lerp(-.95, -.62, eo(tramo(t, TA, TA + .7)));          // frena
-  if (t < TA + 4.6) return -.62;
-  return lerp(-.62, 5.6, suave(tramo(t, TA + 4.6, TOTAL - .6)));
+  if (t < TA) return lerp(-3.2, -1.75, tramo(t, TA - 2.6, TA));
+  if (t < TA + .7) return lerp(-1.75, -1.45, eo(tramo(t, TA, TA + .7)));        // frena antes del cruce
+  if (t < TA + 4.6) return -1.45;
+  return lerp(-1.45, 5.6, suave(tramo(t, TA + 4.6, TOTAL - .6)));
 }
 function peatonZ(t) {
-  if (t < TA - 2.9) return 4.9;
-  if (t < TA) return lerp(4.9, -1.25, tramo(t, TA - 2.9, TA));
-  if (t < TA + 2.2) return -1.25;                                                  // se detiene con el aviso
-  if (t < TA + 4.2) return lerp(-1.25, -4.5, suave(tramo(t, TA + 2.2, TA + 4.2)));
-  return -4.5;
+  if (t < TA - 2.9) return -4.9;
+  if (t < TA) return lerp(-4.9, -3.75, tramo(t, TA - 2.9, TA));
+  if (t < TA + 2.2) return -3.75;                                                  // se detiene con el aviso, antes del pasillo
+  if (t < TA + 5.2) return lerp(-3.75, 4.6, suave(tramo(t, TA + 2.2, TA + 5.2)));  // la grúa frenó: cruza y sigue
+  return 4.6;
 }
 function supervisorPos(t) {
   const a = INICIOS[3] + ESTACIONES[3].dur * .06, b = INICIOS[3] + ESTACIONES[3].dur * .7;
@@ -306,7 +307,7 @@ function cuadro() {
   const gx = gruaX(T), mueve = Math.abs(gx - gruaX(T - .05)) > .002;
   montacargas.g.position.set(gx, PISO, -2.7);
   const pz = peatonZ(T), pzp = peatonZ(T - .05);
-  peaton.g.position.set(.75, PISO, pz); mirar(peaton, 0, pz - pzp || -1); andar(peaton, Math.abs(pz - pzp) > .002 ? 1 : 0, reloj);
+  peaton.g.position.set(1.15, PISO, pz); mirar(peaton, 0, pz - pzp || 1); andar(peaton, Math.abs(pz - pzp) > .002 ? 1 : 0, reloj);
   picker.g.position.set(-5.2, PISO, -2.95); picker.g.rotation.y = Math.PI; andar(picker, 0, reloj); picker.bd.rotation.x = -1.2 - Math.sin(reloj * 1.6) * .5;
   const ax = 4.2 + Math.sin(reloj * .45) * 1.6, axp = 4.2 + Math.sin((reloj - .05) * .45) * 1.6;
   anden.g.position.set(ax, PISO, -2.2); mirar(anden, ax - axp, 0); andar(anden, .9, reloj); transpaleta.position.set(ax + (ax > axp ? .55 : -.55), PISO, -2.2); transpaleta.rotation.y = ax > axp ? 0 : Math.PI;
@@ -322,7 +323,8 @@ function cuadro() {
   const enAlerta = T >= TR && T < TA + 3.4;
   objetos.forEach(([o, alto], i) => {
     const c = o.position.clone().setY(PISO + alto), m = marcos[i], visto = ve(c) && luz > .4;
-    m.material.opacity += ((visto && (i === 0 || i === 6) && e <= 1 ? 1 : 0) - m.material.opacity) * .18;   // solo los protagonistas: menos ruido m.position.copy(c); m.rotation.y = o.rotation.y;
+    m.material.opacity += ((visto && (i === 0 || i === 6) && e <= 1 ? 1 : 0) - m.material.opacity) * .18;   // solo los protagonistas: menos ruido
+    m.position.copy(c); m.rotation.y = o.rotation.y;
     m.material.color.set(enAlerta && (i === 0 || i === 6) ? 0xE5484D : NARANJO);
   });
   mat.luzGrua.emissiveIntensity = mueve || enAlerta ? .4 + (Math.sin(ahora / 140) * .5 + .5) * 1.2 : .15;
@@ -336,7 +338,7 @@ function cuadro() {
   haz.position.copy(PROY); haz.lookAt(aviso.position); haz.scale.set(1.05, 1.05, aviso.position.distanceTo(PROY)); haz.material.uniforms.uLuz.value = kAviso * 1.4;
   const destello = kAviso > 0 ? (Math.sin(tA * 13) * .5 + .5) * kAviso : 0;
   mat.baliza.emissiveIntensity = .08 + destello * 2.4; luzBaliza.intensity = destello * 7;
-  anillo.position.set(.75, PISO + .02, pz); anillo.scale.setScalar(.8 + eo(clamp(tA / 1.3)) * 1.3); anillo.material.opacity = tA >= 0 && tA < 1.3 ? 1 - tA / 1.3 : 0;
+  anillo.position.set(1.15, PISO + .02, pz); anillo.scale.setScalar(.8 + eo(clamp(tA / 1.3)) * 1.3); anillo.material.opacity = tA >= 0 && tA < 1.3 ? 1 - tA / 1.3 : 0;
 
   // 03 · el aviso viaja hasta el jefe de planta, que está trabajando en otro punto de la planta
   let pPunto = null;
