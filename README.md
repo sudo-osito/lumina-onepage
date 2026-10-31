@@ -19,3 +19,8 @@ Página de una sola vista para Lumina, el servicio de visión artificial con IA 
 - **Metodología (v8):** cada tarjeta tiene su video de Mixkit (licencia libre) que muestra lo que dice el texto, con un panel de Lumina encima que se arma solo. Comprender: 23211 (inspectora con tablet), Entrenar: 42664 (analista con datos), Integrar: 22972 (técnico instalando una cámara), Acompañar: 42666 (reunión de equipo). En `recursos/video/metodo/`.
 - **Regla de las detecciones:** solo se afirma lo verificado. Chaleco en verde cuando el color lo confirma; si no, queda como «Persona». Nunca «sin chaleco». Las cajas duplicadas se eliminan (IoU > .45 o una dentro de otra).
 - **Logo:** provisorio (lente + punto de luz), el mismo de la v6 de Optimizo.
+
+## v12 (31-oct)
+- Banner: casco → despacho → bodega → zona. EPP con un modelo de EPP (Hansung-Cho/yolov8-ppe-detection, MIT) + YOLO11/ByteTrack, veredicto por persona en todo el clip (`recursos/video/epp.js`, script `_herramientas/epp_track.py`). Marcos con esquinas, ficha Casco/Chaleco ✓✗ y tarjeta de alerta «Aviso enviado al jefe de turno». Zona restringida = la balanza marcada con cinta, achurada.
+- 01 Desafío (videos reales en gris → color con lo detectado), 02 Beneficios (4 filas), 03 Metodología, 04 Aplicaciones, mundo, 05 Cómo funciona (4 fases: detecta → procesa → aviso al jefe → va al lugar; arriba solo la fase en curso), 06 Preguntas.
+- Parallax: banner que se queda atrás, columnas de Aplicaciones a distinta velocidad. QA: `LUMINA_BANNER(n)`, `LUMINA.maquetaIr(fase, k)`.
