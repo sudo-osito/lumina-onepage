@@ -8,7 +8,9 @@ import * as THREE from "./recursos/vendor/three.module.min.js";
 
 const L = window.LUMINA;
 const cont = document.getElementById("maqueta"), lienzo = cont.querySelector(".maqueta__lienzo"), capa = document.getElementById("etiquetas");
-const chips = [...document.querySelectorAll(".estacion")], textoMovil = document.getElementById("estacion-txt");
+const chips = [...document.querySelectorAll(".estacion")], textoMovil = null;
+const recN = document.getElementById("rec-n"), recT = document.getElementById("rec-t"), recD = document.getElementById("rec-d"), recL = document.getElementById("rec-l"), recActual = recN.parentElement;
+const cctv = document.getElementById("cctv"), cctvCv = cctv.querySelector("canvas");
 const QUIETO = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const lerp = (a, b, k) => a + (b - a) * k;
@@ -336,6 +338,57 @@ function supervisorPos(t) {
   const k = suave(tramo(t, a, TOTAL - .3)); return [lerp(4.3, 1.9, k), lerp(3.3, 2.4, k), k > 0 && k < 1 ? 1 : 0];
 }
 
+// lo que el sistema sabe, estación a estación (se escribe en el panel)
+function lectura(e, k, enc, alerta, tA) {
+  const n = gente.length;
+  if (e === 0) return [[`${n} personas y 1 montacargas en movimiento`], ["Cámaras grabando, sin análisis"], ["Riesgos sin detectar", "mal"]];
+  if (e === 1) return [1, 2, 3].map((c, i) => [`CAM 0${c} · ${enc[i] > .5 ? "en línea" : "conectando…"}`, enc[i] > .5 ? "ok" : ""]);
+  if (e === 2) return [[`${n} personas detectadas`, k > .25 ? "ok" : ""], ["1 montacargas detectado", k > .4 ? "ok" : ""], ["Procesado dentro de la planta", k > .6 ? "ok" : ""]];
+  if (e === 3) return tA < 0 ? [["Montacargas en un punto ciego", "mal"], ["Peatón acercándose al cruce", "mal"]] : [["Advertencia proyectada en el piso", "ok"], ["Baliza encendida", tA > .3 ? "ok" : ""], ["Montacargas detenido", tA > .8 ? "ok" : ""], ["Peatón cruza seguro", tA > 2.4 ? "ok" : ""]];
+  if (e === 4) return [["Hallazgo registrado", k > .1 ? "ok" : ""], ["Clip de la CAM 01 guardado", k > .35 ? "ok" : ""], ["En la plataforma de hallazgos", k > .62 ? "ok" : ""]];
+  return [["Aviso al supervisor de turno", k > .3 ? "ok" : ""], ["Recibido en terreno, en su tablet", k > .45 ? "ok" : ""], ["Nadie tuvo que mirar pantallas", k > .7 ? "ok" : ""]];
+}
+
+/* ── La vista de la cámara 1: la maqueta vista desde su lente, con lo que la IA reconoce ── */
+const camVista = new THREE.PerspectiveCamera(44, 1.6, .1, 120);
+const esquinas = [...Array(8)].map(() => new THREE.Vector3());
+function cajaEnVista(centro, w, h, d, rotY, W, H) {
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9, delante = false;
+  for (let i = 0; i < 8; i++) {
+    const v = esquinas[i].set(i & 1 ? w / 2 : -w / 2, i & 2 ? h / 2 : -h / 2, i & 4 ? d / 2 : -d / 2).applyAxisAngle(Y, rotY).add(centro);
+    v.project(camVista); if (v.z < 1) delante = true;
+    const px = (v.x * .5 + .5) * W, py = (-v.y * .5 + .5) * H; x0 = Math.min(x0, px); y0 = Math.min(y0, py); x1 = Math.max(x1, px); y1 = Math.max(y1, py);
+  }
+  return delante && x1 > 0 && y1 > 0 && x0 < W && y0 < H ? [x0, y0, x1 - x0, y1 - y0] : null;
+}
+function pintarCctv(alerta) {
+  const dpr = Math.min(2, devicePixelRatio || 1), W = cctvCv.clientWidth, H = cctvCv.clientHeight;
+  if (cctvCv.width !== Math.round(W * dpr)) { cctvCv.width = Math.round(W * dpr); cctvCv.height = Math.round(H * dpr); }
+  const c = cctvCv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, W, H);
+  const objs = [[peaton.g, .62, 1.62, .62, "Persona", 0], [montacargas.g, 2.5, 2.4, 1.3, "Montacargas", 1], [picker.g, .62, 1.62, .62, "Persona", 0], [anden.g, .62, 1.62, .62, "Persona", 0], [transpaleta, 1.2, 1.1, .7, "Transpaleta", 1]];
+  objs.forEach(([o, w, h, d, txt, veh], i) => {
+    const r = cajaEnVista(o.position.clone().setY(PISO + h / 2), w, h, d, o.rotation.y, W, H); if (!r) return;
+    const rojo = alerta && i < 2, col = rojo ? "#E5484D" : veh ? "#EC6D27" : "#F5A06A";
+    c.strokeStyle = col; c.lineWidth = 2; c.fillStyle = col + "22"; c.beginPath(); c.roundRect ? c.roundRect(...r, 6) : c.rect(...r); c.fill(); c.stroke();
+    c.font = LETRA(11); const tw = c.measureText(txt).width + 18; c.fillStyle = "rgba(15,11,6,.84)"; c.beginPath(); c.roundRect ? c.roundRect(r[0], Math.max(2, r[1] - 22), tw, 18, 9) : c.rect(r[0], r[1] - 22, tw, 18); c.fill();
+    c.fillStyle = col; c.beginPath(); c.arc(r[0] + 9, Math.max(2, r[1] - 22) + 9, 3, 0, 7); c.fill(); c.fillStyle = "#fff"; c.textBaseline = "middle"; c.fillText(txt, r[0] + 15, Math.max(2, r[1] - 22) + 9.5);
+  });
+  // la grilla del visor
+  c.strokeStyle = "rgba(255,255,255,.14)"; c.lineWidth = 1; c.beginPath(); [1, 2].forEach((i) => { c.moveTo(W * i / 3, 0); c.lineTo(W * i / 3, H); c.moveTo(0, H * i / 3); c.lineTo(W, H * i / 3); }); c.stroke();
+}
+function renderCctv(w, h) {
+  const cr = lienzo.getBoundingClientRect(), r = cctv.getBoundingClientRect(), x = r.left - cr.left, y = r.top - cr.top;
+  const cam0 = camaras[0];
+  camVista.aspect = r.width / r.height; camVista.updateProjectionMatrix();
+  camVista.position.copy(cam0.lente).add(cam0.foco.target.position.clone().sub(cam0.lente).normalize().multiplyScalar(.35));
+  camVista.lookAt(-.4, PISO + .5, -1.9);
+  cam0.cono.visible = false; haz.visible = false;
+  render.setScissorTest(true); render.setScissor(x, h - y - r.height, r.width, r.height); render.setViewport(x, h - y - r.height, r.width, r.height);
+  render.render(escena, camVista);
+  render.setScissorTest(false); render.setViewport(0, 0, w, h);
+  cam0.cono.visible = true; haz.visible = true;
+}
+
 function cuadro() {
   const ahora = performance.now(), dt = Math.min(.05, (ahora - previo) / 1000), reloj = ahora / 1000; previo = ahora;
   if (!L.congelar) { const m = metaScroll(); T += (m - T) * (QUIETO ? 1 : 1 - Math.pow(1 - .08, dt * 60)); }
@@ -345,7 +398,7 @@ function cuadro() {
   // 01–02 · penumbra, y las cámaras se encienden una a una
   const encendida = camaras.map((_, i) => (e === 0 ? 0 : e === 1 ? eo(tramo(k, .12 + i * .22, .32 + i * .22)) : 1));
   const luz = (encendida[0] + encendida[1] + encendida[2]) / 3;
-  cielo.intensity = lerp(.6, 1.25, luz); sol.intensity = lerp(.55, 1.65, luz); render.toneMappingExposure = lerp(.8, 1.02, luz);
+  cielo.intensity = lerp(.32, 1.25, luz); sol.intensity = lerp(.28, 1.65, luz); render.toneMappingExposure = lerp(.66, 1.02, luz);
   camaras.forEach((c, i) => {
     const barrido = e === 1 ? Math.sin(tramo(k, .12 + i * .22, .6 + i * .15) * Math.PI) * 1.2 : 0;
     c.foco.target.position.copy(c.mira).add(new THREE.Vector3(barrido, 0, -barrido * .5)); c.foco.intensity = 4.2 * encendida[i];
@@ -418,10 +471,10 @@ function cuadro() {
   mat.telefono.emissiveIntensity = e === 5 && k > .3 ? .9 + Math.sin(ahora / 90) * .5 : 0;
 
   // pantallas (a ~12 cps)
-  vista.m.visible = (e === 1 && k > .55) || (e === 2 && k < .4);
+  vista.m.visible = false;
   const kVista = e === 1 ? eo(tramo(k, .55, .8)) : 1 - eo(tramo(k, .2, .4));
   vista.m.position.copy(camaras[0].lente).add(new THREE.Vector3(-.4, 2.0, .2)); vista.m.quaternion.copy(camara.quaternion); vista.m.scale.setScalar(Math.max(.001, kVista));
-  if (Math.floor(ahora / 80) !== cuadro.ultima) { cuadro.ultima = Math.floor(ahora / 80); if (vista.m.visible || e === 2) pintarVista(); if (e >= 4) { pintarFicha(L.hora()); pintarPlataforma(e === 4 ? tramo(kF, .6, .85) : 1); } }
+  if (Math.floor(ahora / 80) !== cuadro.ultima) { cuadro.ultima = Math.floor(ahora / 80); if (e === 2) pintarVista(); if (e >= 4) { pintarFicha(L.hora()); pintarPlataforma(e === 4 ? tramo(kF, .6, .85) : 1); } }
 
   // la toma
   let t = ESTACIONES[e].toma;
@@ -431,6 +484,9 @@ function cuadro() {
   if (!arrastre) { giroVel += -giro * .02; giroVel *= .86; giro += giroVel; }
   encuadrar(w, h);
   render.render(escena, camara);
+  const verCctv = (e === 1 && encendida[0] > .5) || e === 2 || e === 3;
+  cctv.classList.toggle("on", verCctv); cctv.classList.toggle("alerta", enAlerta);
+  if (verCctv) { renderCctv(w, h); pintarCctv(enAlerta); }
 
   // etiquetas
   etiquetas.forEach((el, i) => { el.classList.toggle("activo", i === e); el.style.display = aPantalla(ESTACIONES[i].ancla(), el, w, h, i === e ? (w < 700 ? 200 : 330) : 0) ? "" : "none"; });
@@ -442,8 +498,12 @@ function cuadro() {
   mostrar(tagAviso, e === 5 && k > .3, supervisor.g.position.clone().setY(PISO + 2.2), w, h);
   if (e !== estacion) {
     estacion = e; chips.forEach((c, j) => { c.classList.toggle("activo", j === e); c.setAttribute("aria-selected", j === e); });
-    if (textoMovil) textoMovil.innerHTML = `<b>${ESTACIONES[e].t}</b> ${ESTACIONES[e].d}`;
+    recN.textContent = `0${e + 1}`; recT.textContent = ESTACIONES[e].t; recD.textContent = ESTACIONES[e].d;
+    recActual.classList.remove("cambia"); void recActual.offsetWidth; recActual.classList.add("cambia");
   }
+  // la lectura en vivo: lo que el sistema sabe en este momento
+  const L2 = lectura(e, k, encendida, enAlerta, tA), clave = L2.map((x) => x.join("|")).join("·");
+  if (clave !== cuadro.lect) { cuadro.lect = clave; recL.innerHTML = L2.map(([t, est]) => `<li class="${est || ""}">${t}</li>`).join(""); }
   chips[e].style.setProperty("--prog", k);
 }
 

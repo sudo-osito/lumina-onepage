@@ -231,7 +231,22 @@ const CAMARAS = {
     const lista = v.dataset.cam === "despacho" ? cajas(v.currentTime).map((b) => [b.x, b.y, b.w, b.h]) : (() => { const f = cuadro(v.dataset.cam, v.currentTime); return [...f.p, ...(f.v ? [f.v] : [])]; })();
     if (lista.length) { const cx = lista.reduce((a, b) => a + b[0] + b[2] / 2, 0) / lista.length, vis = Math.min(1, (w / h) / (16 / 9)); const meta = vis >= 1 ? .5 : clamp((cx - vis / 2) / (1 - vis)); foco += (meta - foco) * .04; }
     v.style.objectPosition = `${foco * 100}% 50%`;
-    if (v.readyState >= 2) cam.dibujar(c, mapa(w, h, foco), v.currentTime, clamp(w / 1300, .8, 1.3));
+    // el escáner de luz: el video corre en gris y apagado; donde pasa el haz de Lumina toma color y aparece lo que ve
+    if (v.readyState < 2) t0 = performance.now();   // el barrido parte cuando el video ya se ve
+    const kEsc = QUIETO ? 1 : eo(clamp((performance.now() - t0 - 250) / 2300)), xs = kEsc * (w + 40) - 20;
+    if (v.readyState >= 2) {
+      const sv = Math.max(w / v.videoWidth, h / v.videoHeight), vw = v.videoWidth * sv, vh = v.videoHeight * sv;
+      c.save(); c.beginPath(); c.rect(0, 0, Math.max(0, xs), h); c.clip();
+      c.drawImage(v, (w - vw) * foco, (h - vh) / 2, vw, vh);
+      cam.dibujar(c, mapa(w, h, foco), v.currentTime, clamp(w / 1300, .8, 1.3));
+      c.restore();
+    }
+    if (kEsc < 1) {
+      const g = c.createLinearGradient(xs - 160, 0, xs + 4, 0); g.addColorStop(0, "rgba(236,109,39,0)"); g.addColorStop(1, "rgba(236,109,39,.32)");
+      c.fillStyle = g; c.fillRect(xs - 160, 0, 164, h);
+      c.fillStyle = "rgba(255,214,190,.95)"; c.fillRect(xs - 1.5, 0, 3, h);
+      c.save(); c.shadowColor = "rgba(236,109,39,1)"; c.shadowBlur = 40; c.fillStyle = "rgba(236,109,39,.9)"; c.fillRect(xs - 1, 0, 2, h); c.restore();
+    }
     const k = clamp((performance.now() - t0) / DUR);
     if (k >= 1 && !QUIETO) ir((i + 1) % videos.length);
   });
@@ -241,7 +256,7 @@ const CAMARAS = {
 window.LUMINA = { cajas, dibujarCajas, dibujarRiesgo, mapa, hora };
 {
   const m = $("#maqueta");
-  const io3d = new IntersectionObserver(([e]) => { if (!e.isIntersecting) return; io3d.disconnect(); import("./maqueta.js?v=16").catch((err) => { console.error(err); $("#maqueta-cargando").textContent = "No se pudo cargar la maqueta."; }); }, { rootMargin: "120% 0px" });
+  const io3d = new IntersectionObserver(([e]) => { if (!e.isIntersecting) return; io3d.disconnect(); import("./maqueta.js?v=19").catch((err) => { console.error(err); $("#maqueta-cargando").textContent = "No se pudo cargar la maqueta."; }); }, { rootMargin: "120% 0px" });
   io3d.observe(m);
 }
 
@@ -344,11 +359,11 @@ let pintarHoy = () => {};
     const p = clamp(-r.top / (r.height - innerHeight));
     barra.style.setProperty("--p", p);
     // el título entra y al final sube y se va
-    const vis = eo(fase(p, 0, .08)) * (1 - fase(p, .52, .61));
+    const vis = 1 - fase(p, .52, .61);
     cab.style.setProperty("--vis", vis); cab.style.setProperty("--sube", `${-fase(p, .52, .61) * 60}px`);
     // las cámaras y los problemas llegan cada uno desde su lado; al final se abren hacia afuera
     piezas.forEach((el, i) => {
-      const [dx, dy] = el.dataset.desde.split(",").map(Number), k = eo(fase(p, .06 + i * .035, .22 + i * .035)), sale = fase(p, .56, .68);
+      const [dx, dy] = el.dataset.desde.split(",").map(Number), k = eo(fase(p, .0 + i * .03, .14 + i * .03)), sale = fase(p, .56, .68);
       el.style.setProperty("--a", k * (1 - sale));
       el.style.setProperty("--tx", `${(1 - k) * dx * 160 + sale * dx * 120}px`); el.style.setProperty("--ty", `${(1 - k) * dy * 120 + sale * dy * 90}px`);
       el.style.setProperty("--sc", .9 + .1 * k);
@@ -407,7 +422,7 @@ let pintarMundo = () => {};
   pintarMundo = () => {
     const r = sec.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;
     const p = clamp(-r.top / (r.height - innerHeight)), k = eo(clamp(p / .5));
-    a.style.transform = `translateX(${(1 - k) * -60}vw)`; b.style.transform = `translateX(${(1 - k) * 60}vw)`;
+    a.style.transform = `translateX(${(1 - k) * -28}vw)`; b.style.transform = `translateX(${(1 - k) * 28}vw)`;
     a.style.opacity = b.style.opacity = clamp(k * 1.4);
     sim.style.setProperty("--s", .8 + p * .5); sim.style.setProperty("--r", `${p * 90}deg`);
     flota.forEach((f) => f.style.setProperty("--ty", `${(p - .5) * +f.dataset.v * innerHeight * .7}px`));
