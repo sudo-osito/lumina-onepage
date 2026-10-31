@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#FFFFFF">
 <link rel="icon" href="recursos/marcas/lumina-isotipo.svg" type="image/svg+xml">
 <link rel="preload" href="recursos/video/epp.jpg?v=4" as="image">
-<link rel="stylesheet" href="lumina.css?v=21">
+<link rel="stylesheet" href="lumina.css?v=22">
 </head>
 <body>
 
@@ -201,13 +201,12 @@
         <div class="rec">
           <div class="rec__actual" aria-live="polite">
             <span class="rec__n" id="rec-n">01</span>
-            <div><h3 class="rec__t" id="rec-t">Lumina detecta algo</h3><p class="rec__d" id="rec-d">Una grúa sale de un punto ciego justo cuando cruza un peatón. La cámara lo ve.</p></div>
+            <div><h3 class="rec__t" id="rec-t">La cámara ve el riesgo</h3><p class="rec__d" id="rec-d">Una grúa y un peatón están por cruzarse.</p></div>
           </div>
-          <div class="rec__segs" aria-hidden="true"><i class="rec__seg activo"></i><i class="rec__seg"></i><i class="rec__seg"></i><i class="rec__seg"></i></div>
+          <ol class="rec__segs" aria-hidden="true"><li class="rec__seg activo"><span>Ve</span><i></i></li><li class="rec__seg"><span>Actúa</span><i></i></li><li class="rec__seg"><span>Avisa</span><i></i></li><li class="rec__seg"><span>Se corrige</span><i></i></li></ol>
           <div class="maqueta" id="maqueta">
             <canvas class="maqueta__lienzo" aria-hidden="true"></canvas>
             <div class="maqueta__capa" id="etiquetas" aria-hidden="true"></div>
-            <div class="cctv" id="cctv" aria-hidden="true"><canvas></canvas><span class="cctv__rec"><i></i>CAM 01 · EN VIVO</span><span class="cctv__alerta">Riesgo persona–vehículo</span></div>
             <p class="maqueta__cargando" id="maqueta-cargando">Armando la planta…</p>
           </div>
         </div>
@@ -265,6 +264,6 @@
 
 <script src="recursos/video/detecciones.js?v=5"></script>
 <script src="recursos/video/epp.js?v=1"></script>
-<script src="lumina.js?v=21" type="module"></script>
+<script src="lumina.js?v=22" type="module"></script>
 </body>
 </html>

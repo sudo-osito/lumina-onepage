@@ -10,7 +10,6 @@ const L = window.LUMINA;
 const cont = document.getElementById("maqueta"), lienzo = cont.querySelector(".maqueta__lienzo"), capa = document.getElementById("etiquetas");
 const chips = [...document.querySelectorAll(".rec__seg")];
 const recN = document.getElementById("rec-n"), recT = document.getElementById("rec-t"), recD = document.getElementById("rec-d"), recActual = recN.parentElement;
-const cctv = document.getElementById("cctv"), cctvCv = cctv.querySelector("canvas");
 const QUIETO = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const lerp = (a, b, k) => a + (b - a) * k;
@@ -208,35 +207,6 @@ anillo.rotation.x = -Math.PI / 2; escena.add(anillo);
 const marco = (w, h, d) => { const m = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(w, h, d)), new THREE.LineBasicMaterial({ color: NARANJO, transparent: true, opacity: 0 })); escena.add(m); return m; };
 const marcos = [...gente.map(() => marco(.62, 1.62, .62)), marco(2.5, 2.4, 1.3), marco(1.2, 1.1, .7)];
 
-/* ── Pantallas flotantes: lo que ve la cámara y la ficha del hallazgo ── */
-const video = L.videoEn(cont, "recursos/video/despacho.mp4?v=6", "recursos/video/despacho.jpg?v=6");   // en la página, bajo el lienzo: Safari del iPhone no reproduce videos sueltos
-function panel(ancho, alto, px, py) {
-  const cv = Object.assign(document.createElement("canvas"), { width: px, height: py }), tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
-  const m = new THREE.Mesh(new THREE.PlaneGeometry(ancho, alto), new THREE.MeshBasicMaterial({ map: tex, transparent: true, toneMapped: false, depthWrite: false }));
-  m.renderOrder = 5; escena.add(m); m.visible = false; return { m, cv, tex, c: cv.getContext("2d") };
-}
-const rrc = (c, x, y, w, h, r) => { c.beginPath(); c.roundRect ? c.roundRect(x, y, w, h, r) : c.rect(x, y, w, h); };
-const vista = panel(3.6, 2.25, 768, 480), ficha = panel(2.2, 1.45, 560, 370);
-function pintarVista() {
-  const { c, cv } = vista, W = cv.width, H = cv.height;
-  c.clearRect(0, 0, W, H); c.fillStyle = "#0E1114"; rrc(c, 0, 0, W, H, 34); c.fill();
-  c.save(); rrc(c, 10, 10, W - 20, H - 20, 26); c.clip();
-  if (video.readyState >= 2) { const s = Math.max((W - 20) / video.videoWidth, (H - 20) / video.videoHeight); c.drawImage(video, 10 + (W - 20 - video.videoWidth * s) / 2, 10 + (H - 20 - video.videoHeight * s) / 2, video.videoWidth * s, video.videoHeight * s); }
-  c.translate(10, 10); const M = L.mapa(W - 20, H - 20), lista = L.cajas(video.currentTime); L.dibujarRiesgo(c, M, lista, 1, performance.now() / 1000, 1.05); L.dibujarCajas(c, M, lista, 1, 1.05); c.restore();
-  c.fillStyle = "rgba(15,11,6,.72)"; rrc(c, 28, 26, 210, 40, 12); c.fill(); c.fillStyle = "#E5484D"; c.beginPath(); c.arc(50, 46, 7, 0, 7); c.fill();
-  c.fillStyle = "#fff"; c.font = "500 20px ui-monospace, Menlo, monospace"; c.textBaseline = "middle"; c.fillText("CAM 01 · EN VIVO", 66, 47);
-  vista.tex.needsUpdate = true;
-}
-function pintarFicha(hora) {
-  const { c, cv } = ficha, W = cv.width, H = cv.height;
-  c.clearRect(0, 0, W, H); c.fillStyle = "#fff"; rrc(c, 0, 0, W, H, 30); c.fill();
-  c.fillStyle = "rgba(229,72,77,.12)"; rrc(c, 26, 26, 112, 38, 10); c.fill(); c.fillStyle = "#C4282E"; c.font = LETRA(20); c.textBaseline = "middle"; c.fillText("Crítica", 44, 46);
-  c.fillStyle = "#0B131B"; c.font = LETRA(30); c.fillText("Persona–vehículo", 26, 102); c.fillStyle = "#5E6A71"; c.font = LETRA(20, 500); c.fillText("Clip guardado con el hallazgo", 26, 136);
-  [["Lugar", "Cruce · pasillo 2"], ["Cámara", "CAM 01"], ["Hora", hora], ["Acción", "Baliza encendida"], ["Aviso", "Jefe de planta"]].forEach(([k, v], i) => { const y = 180 + i * 38; c.fillStyle = "#5E6A71"; c.font = LETRA(19, 500); c.fillText(k, 26, y); c.fillStyle = "#0B131B"; c.font = LETRA(20); c.fillText(v, 210, y); });
-  ficha.tex.needsUpdate = true;
-}
-/* ── Cuadros de video que viajan por los cables (la IA recibe lo que ven las cámaras) ── */
-const cuadros = Array.from({ length: 9 }, () => { const m = new THREE.Mesh(new THREE.PlaneGeometry(.42, .28), new THREE.MeshBasicMaterial({ map: vista.tex, transparent: true, toneMapped: false, depthWrite: false })); m.renderOrder = 6; escena.add(m); m.visible = false; return m; });
 function brillo() {
   const c = Object.assign(document.createElement("canvas"), { width: 128, height: 128 }), x = c.getContext("2d"), g = x.createRadialGradient(64, 64, 0, 64, 64, 64);
   g.addColorStop(0, "rgba(255,206,170,1)"); g.addColorStop(.25, "rgba(236,109,39,.65)"); g.addColorStop(1, "rgba(236,109,39,0)"); x.fillStyle = g; x.fillRect(0, 0, 128, 128);
@@ -248,10 +218,10 @@ const punto = chispa(), estela = Array.from({ length: 8 }, chispa);
 
 /* ── Las cuatro fases: detecta → lo procesa → el jefe recibe el aviso → va al lugar ── */
 const ESTACIONES = [
-  { t: "Lumina detecta algo", d: "Una grúa sale de un punto ciego justo cuando cruza un peatón. La cámara lo ve.", dur: 5.6, toma: [-.5, 1.1, -1.5, 5.4, -.06] },
-  { t: "La IA lo procesa", d: "Entiende que es un riesgo crítico, enciende la baliza del cruce y guarda el clip.", dur: 4.6, toma: [.5, 1.5, -2.9, 5.6, .1] },
-  { t: "El jefe de planta recibe el aviso", d: "Le llega al celular, donde esté. Nadie tuvo que estar mirando pantallas.", dur: 4.4, toma: [1.8, 1.3, .2, 6.2, -.1] },
-  { t: "Va al lugar a ver qué pasó", d: "Con el clip en la mano llega al punto exacto y lo corrige en terreno.", dur: 5.2, toma: [1.9, 1, -.6, 5.2, -.12] },
+  { t: "La cámara ve el riesgo", d: "Una grúa y un peatón están por cruzarse.", dur: 5.6, toma: [-.5, 1.1, -1.5, 5.4, -.06] },
+  { t: "Lumina lo entiende y actúa", d: "Se enciende la baliza y la grúa frena a tiempo.", dur: 4.6, toma: [.5, 1.5, -2.9, 5.6, .1] },
+  { t: "Avisa al jefe de planta", d: "Le llega al celular, esté donde esté.", dur: 4.4, toma: [1.8, 1.3, .2, 6.2, -.1] },
+  { t: "Lo corrige en terreno", d: "Va al punto exacto con el video en la mano.", dur: 5.2, toma: [1.9, 1, -.6, 5.2, -.12] },
 ];
 const N = ESTACIONES.length;
 const INICIOS = ESTACIONES.reduce((a, e, i) => (a.push(i ? a[i - 1] + ESTACIONES[i - 1].dur : 0), a), []);
@@ -261,8 +231,8 @@ const TA = INICIOS[1] + 1.5;   // el momento en que Lumina actúa en el cruce (b
 const TR = TA - 1.7;           // el momento en que la cámara ve el riesgo
 
 const tag = (txt, extra = "") => { const el = document.createElement("span"); el.className = "tag3d " + extra; el.innerHTML = txt; capa.appendChild(el); return el; };
-const tagPeaton = tag("Persona"), tagGrua = tag("Montacargas"), tagAlerta = tag("Riesgo persona–vehículo", "tag3d--alerta");
-const tagAviso = tag(`<img src="recursos/marcas/lumina-isotipo.svg" alt=""><span><small>Lumina · ahora</small><b>Riesgo persona–vehículo</b><em>Cruce del pasillo 2 · ver clip</em></span>`, "tag3d--aviso");
+const tagPeaton = tag("Peatón"), tagGrua = tag("Grúa"), tagAlerta = tag("Riesgo: grúa y peatón", "tag3d--alerta");
+const tagAviso = tag(`<img src="recursos/marcas/lumina-isotipo.svg" alt=""><span><small>Lumina · ahora</small><b>Riesgo: grúa y peatón</b><em>Pasillo 2 · ver video</em></span>`, "tag3d--aviso");
 const tagLlega = tag("Revisado en terreno", "tag3d--ok");
 tagGrua.style.setProperty("--c", "#EC6D27");
 const proy = new THREE.Vector3();
@@ -314,46 +284,6 @@ function supervisorPos(t) {
   const k = suave(tramo(t, a, b)); return [lerp(4.6, LUGAR.x, k), lerp(3.4, LUGAR.z, k), k > 0 && k < 1 ? 1 : 0];
 }
 
-/* ── La vista de la cámara 1: la maqueta vista desde su lente, con lo que la IA reconoce ── */
-const camVista = new THREE.PerspectiveCamera(44, 1.6, .1, 120);
-const esquinas = [...Array(8)].map(() => new THREE.Vector3());
-function cajaEnVista(centro, w, h, d, rotY, W, H) {
-  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9, delante = false;
-  for (let i = 0; i < 8; i++) {
-    const v = esquinas[i].set(i & 1 ? w / 2 : -w / 2, i & 2 ? h / 2 : -h / 2, i & 4 ? d / 2 : -d / 2).applyAxisAngle(Y, rotY).add(centro);
-    v.project(camVista); if (v.z < 1) delante = true;
-    const px = (v.x * .5 + .5) * W, py = (-v.y * .5 + .5) * H; x0 = Math.min(x0, px); y0 = Math.min(y0, py); x1 = Math.max(x1, px); y1 = Math.max(y1, py);
-  }
-  return delante && x1 > 0 && y1 > 0 && x0 < W && y0 < H ? [x0, y0, x1 - x0, y1 - y0] : null;
-}
-function pintarCctv(alerta) {
-  const dpr = Math.min(2, devicePixelRatio || 1), W = cctvCv.clientWidth, H = cctvCv.clientHeight;
-  if (cctvCv.width !== Math.round(W * dpr)) { cctvCv.width = Math.round(W * dpr); cctvCv.height = Math.round(H * dpr); }
-  const c = cctvCv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, W, H);
-  const objs = [[peaton.g, .62, 1.62, .62, "Persona", 0], [montacargas.g, 2.5, 2.4, 1.3, "Montacargas", 1], [picker.g, .62, 1.62, .62, "Persona", 0], [anden.g, .62, 1.62, .62, "Persona", 0], [transpaleta, 1.2, 1.1, .7, "Transpaleta", 1]];
-  objs.forEach(([o, w, h, d, txt, veh], i) => {
-    const r = cajaEnVista(o.position.clone().setY(PISO + h / 2), w, h, d, o.rotation.y, W, H); if (!r) return;
-    const rojo = alerta && i < 2, col = rojo ? "#E5484D" : veh ? "#EC6D27" : "#F5A06A";
-    c.strokeStyle = col; c.lineWidth = 2; c.fillStyle = col + "22"; c.beginPath(); c.roundRect ? c.roundRect(...r, 6) : c.rect(...r); c.fill(); c.stroke();
-    c.font = LETRA(11); const tw = c.measureText(txt).width + 18; c.fillStyle = "rgba(15,11,6,.84)"; c.beginPath(); c.roundRect ? c.roundRect(r[0], Math.max(2, r[1] - 22), tw, 18, 9) : c.rect(r[0], r[1] - 22, tw, 18); c.fill();
-    c.fillStyle = col; c.beginPath(); c.arc(r[0] + 9, Math.max(2, r[1] - 22) + 9, 3, 0, 7); c.fill(); c.fillStyle = "#fff"; c.textBaseline = "middle"; c.fillText(txt, r[0] + 15, Math.max(2, r[1] - 22) + 9.5);
-  });
-  // la grilla del visor
-  c.strokeStyle = "rgba(255,255,255,.14)"; c.lineWidth = 1; c.beginPath(); [1, 2].forEach((i) => { c.moveTo(W * i / 3, 0); c.lineTo(W * i / 3, H); c.moveTo(0, H * i / 3); c.lineTo(W, H * i / 3); }); c.stroke();
-}
-function renderCctv(w, h) {
-  const cr = lienzo.getBoundingClientRect(), r = cctv.getBoundingClientRect(), x = r.left - cr.left, y = r.top - cr.top;
-  const cam0 = camaras[0];
-  camVista.aspect = r.width / r.height; camVista.updateProjectionMatrix();
-  camVista.position.copy(cam0.lente).add(cam0.foco.target.position.clone().sub(cam0.lente).normalize().multiplyScalar(.35));
-  camVista.lookAt(-.4, PISO + .5, -1.9);
-  cam0.cono.visible = false; haz.visible = false;
-  render.setScissorTest(true); render.setScissor(x, h - y - r.height, r.width, r.height); render.setViewport(x, h - y - r.height, r.width, r.height);
-  render.render(escena, camVista);
-  render.setScissorTest(false); render.setViewport(0, 0, w, h);
-  cam0.cono.visible = true; haz.visible = true;
-}
-
 function cuadro() {
   const ahora = performance.now(), dt = Math.min(.05, (ahora - previo) / 1000), reloj = ahora / 1000; previo = ahora;
   if (!L.congelar) { const m = metaScroll(); T += (m - T) * (QUIETO ? 1 : 1 - Math.pow(1 - .08, dt * 60)); }
@@ -397,13 +327,6 @@ function cuadro() {
   });
   mat.luzGrua.emissiveIntensity = mueve || enAlerta ? .4 + (Math.sin(ahora / 140) * .5 + .5) * 1.2 : .15;
 
-  // 03 · la IA: los cuadros viajan por los cables al equipo Lumina
-  cuadros.forEach((q, i) => {
-    const fase = ((k * 5 + i * .37) % 1);
-    q.visible = e === 1 && k > .02 && k < .4; if (!q.visible) return;
-    q.position.copy(cables[i % 3].getPointAt(fase)); q.quaternion.copy(camara.quaternion); q.scale.setScalar(.6 + Math.sin(fase * Math.PI) * .6);
-    q.material.opacity = Math.sin(fase * Math.PI);
-  });
   mat.chip.emissiveIntensity = e === 1 && k < .5 ? .6 + Math.sin(ahora / 80) * .5 : e >= 1 ? .35 : luz * .15;
 
   // 04 · la alerta en terreno: proyector, baliza, anillo y la grúa que frena
@@ -414,11 +337,6 @@ function cuadro() {
   const destello = kAviso > 0 ? (Math.sin(tA * 13) * .5 + .5) * kAviso : 0;
   mat.baliza.emissiveIntensity = .08 + destello * 2.4; luzBaliza.intensity = destello * 7;
   anillo.position.set(.75, PISO + .02, pz); anillo.scale.setScalar(.8 + eo(clamp(tA / 1.3)) * 1.3); anillo.material.opacity = tA >= 0 && tA < 1.3 ? 1 - tA / 1.3 : 0;
-
-  // 02 · la ficha del hallazgo se arma sobre el equipo de IA
-  const kF = e === 1 ? eo(tramo(k, .32, .5)) : e === 2 ? 1 - eo(tramo(k, .02, .2)) : 0;
-  ficha.m.visible = kF > .01;
-  ficha.m.position.copy(EDGE).add(new THREE.Vector3(.4, 3.6, .6)); ficha.m.quaternion.copy(camara.quaternion); ficha.m.scale.setScalar(Math.max(.001, kF * 1.7));
 
   // 03 · el aviso viaja hasta el jefe de planta, que está trabajando en otro punto de la planta
   let pPunto = null;
@@ -433,12 +351,6 @@ function cuadro() {
   // 04 · llega al lugar: un anillo marca el punto exacto del hallazgo
   if (e === 3 && k > .06) { const kl = tramo(k, .7, .9); anillo.position.set(LUGAR.x, PISO + .02, LUGAR.z); anillo.scale.setScalar(lerp(1.15 + Math.sin(ahora / 260) * .1, .7, kl)); anillo.material.opacity = lerp(.8, .35, kl); anillo.material.color.set(kl >= 1 ? 0x1F9D5A : NARANJO); } else anillo.material.color.set(NARANJO);
 
-  // pantallas (a ~12 cps)
-  vista.m.visible = false;
-  const kVista = e === 1 ? eo(tramo(k, .55, .8)) : 1 - eo(tramo(k, .2, .4));
-  vista.m.position.copy(camaras[0].lente).add(new THREE.Vector3(-.4, 2.0, .2)); vista.m.quaternion.copy(camara.quaternion); vista.m.scale.setScalar(Math.max(.001, kVista));
-  if (Math.floor(ahora / 80) !== cuadro.ultima) { cuadro.ultima = Math.floor(ahora / 80); if (e === 1) pintarVista(); if (kF > .01) pintarFicha(L.hora()); }
-
   // la toma
   let t = ESTACIONES[e].toma;
   if (e === 0 && k < .12) t = GENERAL;
@@ -447,9 +359,6 @@ function cuadro() {
   if (!arrastre) { giroVel += -giro * .02; giroVel *= .86; giro += giroVel; }
   encuadrar(w, h);
   render.render(escena, camara);
-  const verCctv = (e === 0 && encendida[0] > .5) || (e === 1 && k < .3);
-  cctv.classList.toggle("on", verCctv); cctv.classList.toggle("alerta", enAlerta);
-  if (verCctv) { renderCctv(w, h); pintarCctv(enAlerta); }
 
   // etiquetas
   mostrar(tagPeaton, marcos[0].material.opacity > .5 && e <= 1 && !enAlerta, peaton.g.position.clone().setY(PISO + 1.9), w, h);
@@ -470,7 +379,7 @@ let raf = 0;
 const bucle = () => { if (!visible) return; raf = requestAnimationFrame(bucle); cuadro(); };
 new IntersectionObserver(([en]) => {
   visible = en.isIntersecting;
-  if (visible) { previo = performance.now(); L.reproducir(video); cancelAnimationFrame(raf); raf = requestAnimationFrame(bucle); } else L.pausar(video);
+  if (visible) { previo = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(bucle); }
 }, { threshold: 0 }).observe(cont);
 cuadro();
 cont.classList.add("lista"); document.getElementById("maqueta-cargando")?.remove();
