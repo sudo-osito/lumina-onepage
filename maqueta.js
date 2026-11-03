@@ -20,7 +20,7 @@ const LETRA = (px, peso = 600) => `${peso} ${px}px -apple-system, "SF Pro Text",
 
 /* ── Escenario ── */
 const render = new THREE.WebGLRenderer({ canvas: lienzo, antialias: true, alpha: true, powerPreference: "high-performance" });
-render.setPixelRatio(Math.min(1.75, devicePixelRatio || 1));
+render.setPixelRatio(Math.min(1.5, devicePixelRatio || 1));
 render.shadowMap.enabled = true; render.shadowMap.type = THREE.PCFSoftShadowMap;
 render.toneMapping = THREE.ACESFilmicToneMapping;
 const escena = new THREE.Scene();
@@ -243,7 +243,7 @@ const LUGAR = new THREE.Vector3(.15, PISO, -1.75);   // donde el jefe llega a re
 
 /* ── La cámara de la maqueta: cada estación su toma; arrastrar la inclina ── */
 const DIR = new THREE.Vector3(.78, .95, 1).normalize(), Y = new THREE.Vector3(0, 1, 0);
-const toma = { c: new THREE.Vector3(...GENERAL.slice(0, 3)), t: GENERAL[3], g: 0 }, meta = { c: new THREE.Vector3(), t: 0, g: 0 };
+const toma = { c: new THREE.Vector3(...GENERAL.slice(0, 3)), t: GENERAL[3], g: 0 };
 let giro = 0, giroVel = 0, arrastre = null;
 lienzo.addEventListener("pointerdown", (e) => { arrastre = { x: e.clientX, g: giro }; lienzo.setPointerCapture(e.pointerId); });
 lienzo.addEventListener("pointermove", (e) => { if (arrastre) giro = clamp(arrastre.g + (e.clientX - arrastre.x) / 900, -.25, .25); });
@@ -287,7 +287,7 @@ function supervisorPos(t) {
 
 function cuadro() {
   const ahora = performance.now(), dt = Math.min(.05, (ahora - previo) / 1000), reloj = ahora / 1000; previo = ahora;
-  if (!L.congelar) { const m = metaScroll(); T += (m - T) * (QUIETO ? 1 : 1 - Math.pow(1 - .16, dt * 60)); }
+  if (!L.congelar) { const m = metaScroll(); T += (m - T) * (QUIETO ? 1 : 1 - Math.pow(1 - .5, dt * 60)); }
   const e = estacionDe(T), k = clamp((T - INICIOS[e]) / ESTACIONES[e].dur), w = cont.clientWidth, h = cont.clientHeight;
   if (lienzo.width !== Math.round(w * render.getPixelRatio())) render.setSize(w, h, false);
 
@@ -354,10 +354,9 @@ function cuadro() {
   if (e === 3 && k > .06) { const kl = tramo(k, .7, .9); anillo.position.set(LUGAR.x, PISO + .02, LUGAR.z); anillo.scale.setScalar(lerp(1.15 + Math.sin(ahora / 260) * .1, .7, kl)); anillo.material.opacity = lerp(.8, .35, kl); anillo.material.color.set(kl >= 1 ? 0x1F9D5A : NARANJO); } else anillo.material.color.set(NARANJO);
 
   // la toma
-  let t = ESTACIONES[e].toma;
-  if (e === 0 && k < .12) t = GENERAL;
-  meta.c.set(t[0], t[1], t[2]); meta.t = t[3]; meta.g = t[4];
-  const s = 1 - Math.pow(1 - .09, dt * 60); toma.c.lerp(meta.c, s); toma.t = lerp(toma.t, meta.t, s); toma.g = lerp(toma.g, meta.g, s);
+  // la toma sale directo del scroll: al empezar cada fase pasa de la toma anterior a la suya (sin perseguirla)
+  const de = e ? ESTACIONES[e - 1].toma : GENERAL, a = ESTACIONES[e].toma, ini = e ? 0 : .12, mz = suave(tramo(k, ini, ini + .25));
+  toma.c.set(lerp(de[0], a[0], mz), lerp(de[1], a[1], mz), lerp(de[2], a[2], mz)); toma.t = lerp(de[3], a[3], mz); toma.g = lerp(de[4], a[4], mz);
   if (!arrastre) { giroVel += -giro * .02; giroVel *= .86; giro += giroVel; }
   encuadrar(w, h);
   render.render(escena, camara);
