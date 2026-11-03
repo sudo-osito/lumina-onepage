@@ -276,8 +276,8 @@ function peatonZ(t) {
   if (t < TA - 2.9) return -4.9;
   if (t < TA) return lerp(-4.9, -3.75, tramo(t, TA - 2.9, TA));
   if (t < TA + 2.2) return -3.75;                                                  // se detiene con el aviso, antes del pasillo
-  if (t < TA + 5.2) return lerp(-3.75, 4.6, suave(tramo(t, TA + 2.2, TA + 5.2)));  // la grúa frenó: cruza y sigue
-  return 4.6;
+  if (t < TA + 4.2) return lerp(-3.75, -1.5, suave(tramo(t, TA + 2.2, TA + 4.2)));  // la grúa frenó: cruza el pasillo
+  return -1.5;                                                                      // y espera ahí, al lado del punto, a que llegue el jefe
 }
 function supervisorPos(t) {
   const a = INICIOS[3] + ESTACIONES[3].dur * .06, b = INICIOS[3] + ESTACIONES[3].dur * .7;
@@ -306,15 +306,15 @@ function cuadro() {
   // la gente y la grúa
   const gx = gruaX(T), mueve = Math.abs(gx - gruaX(T - .05)) > .002;
   montacargas.g.position.set(gx, PISO, -2.7);
-  const pz = peatonZ(T), pzp = peatonZ(T - .05);
-  peaton.g.position.set(1.15, PISO, pz); mirar(peaton, 0, pz - pzp || 1); andar(peaton, Math.abs(pz - pzp) > .002 ? 1 : 0, reloj);
+  const pz = peatonZ(T), pzp = peatonZ(T - .05), [sx, sz, sm] = supervisorPos(T), [sxp, szp] = supervisorPos(T - .05);
+  peaton.g.position.set(1.15, PISO, pz); andar(peaton, Math.abs(pz - pzp) > .002 ? 1 : 0, reloj);
+  if (T > TA + 4.2) mirar(peaton, sx - 1.15, sz - pz); else mirar(peaton, 0, pz - pzp || 1);   // ya cruzó: mira hacia el jefe
   picker.g.position.set(-5.2, PISO, -2.95); picker.g.rotation.y = Math.PI; andar(picker, 0, reloj); picker.bd.rotation.x = -1.2 - Math.sin(reloj * 1.6) * .5;
   const ax = 4.2 + Math.sin(reloj * .45) * 1.6, axp = 4.2 + Math.sin((reloj - .05) * .45) * 1.6;
   anden.g.position.set(ax, PISO, -2.2); mirar(anden, ax - axp, 0); andar(anden, .9, reloj); transpaleta.position.set(ax + (ax > axp ? .55 : -.55), PISO, -2.2); transpaleta.rotation.y = ax > axp ? 0 : Math.PI;
   const cxw = -5 + ((reloj * .55) % 10), cxp = -5 + (((reloj - .05) * .55) % 10);
   caminante.g.position.set(cxw, PISO, 3.2); mirar(caminante, cxw - cxp, 0); andar(caminante, 1, reloj);
   chofer.g.position.set(7.6, PISO, -4.4); chofer.g.rotation.y = -2.4; andar(chofer, 0, reloj); chofer.bd.rotation.x = -.4 + Math.sin(reloj) * .2;
-  const [sx, sz, sm] = supervisorPos(T), [sxp, szp] = supervisorPos(T - .05);
   supervisor.g.position.set(sx, PISO, sz); if (sm) mirar(supervisor, sx - sxp, sz - szp); else supervisor.g.rotation.y = -2.6; andar(supervisor, sm, reloj);
 
   // detecciones: lo que alguna cámara alcanza a ver
