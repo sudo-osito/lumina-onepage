@@ -518,3 +518,12 @@ section[id] { scroll-margin-top: 72px; }
 .rec__seg.activo { color: var(--lumina-texto); } .rec__seg.activo i::after { transform: scaleX(var(--prog, 0)); }
 .rec__t { font-size: clamp(1.7rem, 1rem + 1.6vw, 2.6rem); }
 @media (max-width: 1020px) { .rec__seg { font-size: 12.5px; } .rec__t { font-size: 1.45rem; } .rec__d { font-size: 15px; } }
+
+/* ── Modo lámina (?lamina): sin barra ni asistente, la página dentro de la presentación de la feria ── */
+html.lamina { scroll-behavior: auto !important; overflow: hidden; }
+.lamina #nav, .lamina #progreso, .lamina #menu-movil, .lamina .asis, .lamina [class*="asistente"] { display: none !important; }
+.lamina .recorrido__fijo { top: 0; height: 100vh; }
+.lamina-solo { display: none; }
+.lamina .lamina-solo { display: block; }
+.lamina .vs--prv .vs__llena { --p: 1; transition: transform 1.6s var(--llegada); }
+.lamina .vs__llena { transition: transform 2.6s var(--llegada); }
