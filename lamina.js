@@ -30,7 +30,7 @@
       clearTimeout(llena._t); if (d.lamina === id) llena._t = setTimeout(() => { llena.style.setProperty("--p", 1); const ch = document.querySelector(`#${id} .vs__chispa`); if (ch) ch.style.setProperty("--vis", 0); }, 900);
     }
     if (d.salto) { anim = false; y = meta; scrollTo(0, y); return; }
-    y0 = scrollY; t0 = performance.now(); dur = d.lamina === "recorrido" ? 4200 : 1400; if (!anim) { anim = true; requestAnimationFrame(paso); }
+    y0 = scrollY; t0 = performance.now(); dur = d.lamina === "recorrido" ? 5200 : 1400; if (!anim) { anim = true; requestAnimationFrame(paso); }
   });
   addEventListener("load", () => parent.postMessage({ luminaLista: true }, "*"));
 })();

@@ -255,7 +255,10 @@ function encuadrar(w, h) {
 }
 
 /* ── El reloj: el scroll maneja la historia ── */
-let T = 0, previo = performance.now(), estacion = -1, visible = false;
+let T = 0, Tant = 0, previo = performance.now(), estacion = -1, visible = false;
+const LAMINA = document.documentElement.classList.contains("lamina");
+// la marcha sube y baja suave, y solo si la historia avanza de verdad (si el recorrido se detiene, se quedan parados)
+const marcha = (p, meta, t, dt) => { p.amp = (p.amp || 0) + (meta - (p.amp || 0)) * Math.min(1, dt * 7); andar(p, p.amp, t); };
 const tramoScroll = document.getElementById("recorrido");
 const metaScroll = () => { const r = tramoScroll.getBoundingClientRect(); return clamp(-(r.top - 64) / Math.max(1, r.height - (innerHeight - 64))) * TOTAL * .9999; };
 const estacionDe = (t) => { let i = 0; while (i < N - 1 && t >= INICIOS[i + 1]) i++; return i; };
@@ -287,7 +290,8 @@ function supervisorPos(t) {
 
 function cuadro() {
   const ahora = performance.now(), dt = Math.min(.05, (ahora - previo) / 1000), reloj = ahora / 1000; previo = ahora;
-  if (!L.congelar) { const m = metaScroll(); T += (m - T) * (QUIETO ? 1 : 1 - Math.pow(1 - .5, dt * 60)); }
+  if (!L.congelar) { const m = metaScroll(); T += (m - T) * (QUIETO ? 1 : 1 - Math.pow(1 - (LAMINA ? .07 : .5), dt * 60)); }
+  const avanza = Math.min(1, Math.abs(T - Tant) / Math.max(dt, 1e-3) / .6); Tant = T;
   const e = estacionDe(T), k = clamp((T - INICIOS[e]) / ESTACIONES[e].dur), w = cont.clientWidth, h = cont.clientHeight;
   if (lienzo.width !== Math.round(w * render.getPixelRatio())) render.setSize(w, h, false);
 
@@ -307,7 +311,7 @@ function cuadro() {
   const gx = gruaX(T), mueve = Math.abs(gx - gruaX(T - .05)) > .002;
   montacargas.g.position.set(gx, PISO, -2.7);
   const pz = peatonZ(T), pzp = peatonZ(T - .05), [sx, sz, sm] = supervisorPos(T), [sxp, szp] = supervisorPos(T - .05);
-  peaton.g.position.set(1.15, PISO, pz); andar(peaton, Math.abs(pz - pzp) > .002 ? 1 : 0, reloj);
+  peaton.g.position.set(1.15, PISO, pz); marcha(peaton, Math.abs(pz - pzp) > .002 ? avanza : 0, reloj, dt);
   if (T > TA + 4.2) mirar(peaton, sx - 1.15, sz - pz); else mirar(peaton, 0, pz - pzp || 1);   // ya cruzó: mira hacia el jefe
   picker.g.position.set(-5.2, PISO, -2.95); picker.g.rotation.y = Math.PI; andar(picker, 0, reloj); picker.bd.rotation.x = -1.2 - Math.sin(reloj * 1.6) * .5;
   const ax = 4.2 + Math.sin(reloj * .45) * 1.6, axp = 4.2 + Math.sin((reloj - .05) * .45) * 1.6;
@@ -315,7 +319,7 @@ function cuadro() {
   const cxw = -5 + ((reloj * .55) % 10), cxp = -5 + (((reloj - .05) * .55) % 10);
   caminante.g.position.set(cxw, PISO, 3.2); mirar(caminante, cxw - cxp, 0); andar(caminante, 1, reloj);
   chofer.g.position.set(7.6, PISO, -4.4); chofer.g.rotation.y = -2.4; andar(chofer, 0, reloj); chofer.bd.rotation.x = -.4 + Math.sin(reloj) * .2;
-  supervisor.g.position.set(sx, PISO, sz); if (sm) mirar(supervisor, sx - sxp, sz - szp); else supervisor.g.rotation.y = -2.6; andar(supervisor, sm, reloj);
+  supervisor.g.position.set(sx, PISO, sz); if (sm) mirar(supervisor, sx - sxp, sz - szp); else supervisor.g.rotation.y = -2.6; marcha(supervisor, sm ? avanza : 0, reloj, dt);
 
   // detecciones: lo que alguna cámara alcanza a ver
   const ve = (p) => camaras.some((c, i) => { if (encendida[i] < .5) return false; const v = p.clone().sub(c.lente).normalize(), d = c.foco.target.position.clone().sub(c.lente).normalize(); return v.dot(d) > Math.cos(c.angulo * 1.05); });
