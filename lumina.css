@@ -527,3 +527,6 @@ html.lamina { scroll-behavior: auto !important; overflow: hidden; }
 .lamina .lamina-solo { display: block; }
 .lamina .vs--prv .vs__llena { --p: 1; transition: transform 1.6s var(--llegada); }
 .lamina .vs__llena { transition: transform 2.6s var(--llegada); }
+/* lámina: «Eso es» y abajo Lumina (pedido de Bastián) */
+.lamina .eso { flex-direction: column; gap: .28em; }
+.lamina .eso img { height: .82em; }

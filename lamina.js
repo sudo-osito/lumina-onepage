@@ -4,6 +4,8 @@
   if (!/[?&]lamina\b/.test(location.search)) return;
   document.documentElement.classList.add("lamina");
   history.scrollRestoration = "manual";
+  // textos propios de la presentación (la web no cambia)
+  addEventListener("DOMContentLoaded", () => { const b = document.querySelector("#hoy .bajada"); if (b) b.textContent = "Lo que pasa en tu operación queda grabado y se revisa cuando ya es tarde."; });
   let meta = 0, y = 0, anim = false;
   const paso = () => { y += (meta - y) * .075; if (Math.abs(meta - y) < .6) { y = meta; anim = false; } scrollTo(0, y); if (anim) requestAnimationFrame(paso); };
   const destino = (id, u) => {
