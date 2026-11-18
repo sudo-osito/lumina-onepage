@@ -530,3 +530,19 @@ html.lamina { scroll-behavior: auto !important; overflow: hidden; }
 /* lámina: «Eso es» y abajo Lumina (pedido de Bastián) */
 .lamina .eso { flex-direction: column; gap: .28em; }
 .lamina .eso img { height: .82em; }
+/* lámina · cómo funciona el sistema: título arriba, maqueta al medio, los pasos abajo */
+.lamina .lamina-tit { order: 1; padding: 56px 0 0; text-align: center; font-size: 4.2rem; line-height: 1; letter-spacing: -.055em; font-weight: 650; color: var(--tinta); }
+.lamina .rec .maqueta { order: 2; }
+.lamina .rec__actual { order: 3; padding: 6px 0 10px; }
+.lamina .rec__segs { order: 4; width: min(980px, 100% - 48px); margin: 6px auto 46px; gap: 18px; }
+.lamina .rec__seg { font-size: 22px; gap: 10px; }
+.lamina .rec__seg i { height: 5px; }
+.lamina .rec__t { font-size: 2.6rem; } .lamina .rec__d { font-size: 20px; }
+/* lámina · aplicaciones: cuatro bloques en una sola pantalla */
+.lamina #aplicaciones { padding: 58px 0 40px; }
+.lamina #aplicaciones .cab { margin-bottom: 30px; gap: 12px; }
+.lamina #aplicaciones .cab .t { font-size: 3.6rem; max-width: none; }
+.lamina #aplicaciones .bajada { display: none; }
+.lamina #aplicaciones .apps__grilla { grid-template-columns: repeat(2, 640px); justify-content: center; gap: 22px; }
+.lamina #aplicaciones .app { grid-column: auto !important; aspect-ratio: 16 / 9.2; transform: none !important; }
+.lamina #aplicaciones .app--texto { display: none; }
